@@ -17,6 +17,10 @@ Claude.ai の artifacts 機能で作成した、単一HTMLファイルの学習�
 | CH.04 守る | コードの脆弱性(XSS・SQLi・秘密情報など)をリスクレベル付きで指摘 | 必要 |
 | CH.05 コラム | 外部学習リソース集(所要時間・言語・レベル表記付き) | 不要 |
 
+### 用語ホバー解説
+
+コードブロック内の単語(`const`、`fetch`、`=>`、`border-radius` など)にマウスをかざすと、`glossary.js` の用語マスタ(約490語)を参照して解説ツールチップが表示されます。マスタはJS/HTML/CSS/HTTP・API/SQL/Python/Git/AI/セキュリティ用語をカバーしており、`glossary.js` に1行足すだけで語彙を増やせます。
+
 ## 使い方
 
 - **claude.ai の artifacts 内**: そのまま動作します(AI呼び出しは追加課金なし)
@@ -35,7 +39,8 @@ Claude.ai の artifacts 機能で作成した、単一HTMLファイルの学習�
 
 ```
 .
-├── index.html   # アプリ本体(HTML/CSS/JSすべて1ファイル)
+├── index.html    # アプリ本体(HTML/CSS/JSすべて1ファイル)
+├── glossary.js   # コード用語マスタ(ホバー解説の辞書)
 ├── README.md
-└── CLAUDE.md    # Claude Code向けの開発コンテキスト
+└── CLAUDE.md     # Claude Code向けの開発コンテキスト
 ```

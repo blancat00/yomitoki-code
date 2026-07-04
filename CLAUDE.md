@@ -9,9 +9,10 @@ claude.ai の artifacts 機能で作成した**単一HTMLファイルアプリ**
 
 ```
 yomitoki-code/
-├── index.html   # アプリ本体（約1150行、HTML/CSS/JSすべてここ）
-├── README.md    # 利用者向け説明
-└── CLAUDE.md    # このファイル
+├── index.html    # アプリ本体（HTML/CSS/JSすべてここ）
+├── glossary.js   # コード用語マスタ（約490語、ホバー解説の辞書）
+├── README.md     # 利用者向け説明
+└── CLAUDE.md     # このファイル
 ```
 
 ## タブ構成と実装場所（index.html内）
@@ -30,6 +31,16 @@ yomitoki-code/
 - **AI応答の形式**: 各タブのプロンプトで「JSON形式のみ」を指定し、`parseJSON()`（```json フェンス除去 + JSON.parse）で解析。失敗時は try/catch でエラーボックス表示。
 - **データ保存**: artifacts の `window.storage` を使用。存在しない環境では冒頭のシムが `localStorage`（キー接頭辞 `yomitoki:`）にフォールバックする。保存対象はクイズの成績（`learn_done`）と各タブの履歴（`read_history` / `debug_history` / `sec_history`、各5件まで）。
 - **XSS対策**: AI応答・ユーザー入力の表示は必ず `escapeHtml()` / `formatAiText()` を通す。新しい表示処理を足すときも同様にすること。
+
+## 用語ホバー解説（glossary.js）
+
+コードブロック（`pre.codeblock` / `code.inline`）内の単語にカーソルをのせると、`glossary.js` のマスタを参照して解説ツールチップが出る。
+
+- マスタは `window.YOMITOKI_GLOSSARY = { "単語": {cat, desc}, ... }` の形。**1行足すだけで語彙を増やせる**
+- `console.log` のようなドット付きキー、`=>` のような記号キー、`border-radius` のようなハイフン付きキーに対応
+- 実装は index.html 末尾の `/* GLOSSARY HOVER */` セクション。`caretRangeFromPoint` でカーソル下の文字を特定 → トークン候補を組み立て → マスタを引く
+- glossary.js が読み込まれていない環境（artifacts単体など）では自動的に無効化される（エラーにならない）
+- ツールチップの表示は `escapeHtml()` を通している。マスタのdescにHTMLは書かない
 
 ## 教材データの編集
 
