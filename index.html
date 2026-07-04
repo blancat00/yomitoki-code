@@ -269,6 +269,24 @@
 
   footer.note{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:30px;}
 
+  /* glossary hover tooltip */
+  #glossaryTip{
+    position:fixed;z-index:9999;max-width:340px;display:none;pointer-events:none;
+    background:var(--card);border:1px solid var(--ink);border-radius:var(--radius);
+    padding:10px 14px;font-size:13px;line-height:1.65;color:var(--ink);
+    box-shadow:0 6px 18px rgba(32,41,58,.22);
+  }
+  #glossaryTip .g-term{
+    font-family:'JetBrains Mono', monospace;font-weight:600;font-size:12.5px;
+    display:inline-block;margin-bottom:3px;
+  }
+  #glossaryTip .g-cat{
+    font-family:'JetBrains Mono', monospace;font-size:10px;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:100px;padding:1px 8px;margin-left:8px;
+    vertical-align:1px;
+  }
+  #glossaryTip .g-desc{display:block;}
+
   @media (max-width:600px){
     header.hero{flex-direction:column;align-items:flex-start;gap:8px;}
     section.panel{padding:18px;}
@@ -404,9 +422,10 @@
     </div>
   </section>
 
-  <footer class="note">Claude in Claude で動作 ・ 追加のAPI課金なし ・ 学ぶ/コラムはAIなしでも利用可</footer>
+  <footer class="note">Claude in Claude で動作 ・ 追加のAPI課金なし ・ 学ぶ/コラムはAIなしでも利用可<br>コード内の単語にカーソルをのせると用語解説が表示されます(glossary.js読み込み時)</footer>
 </div>
 
+<script src="glossary.js"></script>
 <script>
 /* ---------- storage shim: claude.aiのartifacts外(GitHub Pages・ローカル等)ではlocalStorageで代替 ---------- */
 if (typeof window.storage === 'undefined') {
@@ -1149,6 +1168,127 @@ function renderSecResult(data){
   renderHistory(document.getElementById('debugHistory'), dh, (item)=>renderDebugResult(item.data));
   const sh = await loadHistory('sec_history');
   renderHistory(document.getElementById('secHistory'), sh, (item)=>renderSecResult(item.data));
+})();
+
+/* ================= GLOSSARY HOVER =================
+   glossary.js(用語マスタ)が読み込まれていれば、コードブロック内の
+   単語にカーソルをのせると解説ツールチップを表示する。
+   マスタが無い環境(artifacts単体など)では何もしない。 */
+(function(){
+  const dict = window.YOMITOKI_GLOSSARY;
+  if(!dict) return;
+
+  const tip = document.createElement('div');
+  tip.id = 'glossaryTip';
+  document.body.appendChild(tip);
+  let currentTerm = null;
+
+  const WORD = /[A-Za-z0-9_$]/;             // 単語1文字
+  const TOKEN = /[A-Za-z0-9_$.\-]/;          // ドット・ハイフン込みのトークン
+  const SYM = /[=!<>+\-*/%&|?.:^~$@{}]/;     // 記号の連なり(=> や === など)
+
+  /* マウス座標の下にある文字位置からトークン候補を組み立てる */
+  function candidatesAt(x, y){
+    let node = null, offset = 0;
+    if(document.caretRangeFromPoint){
+      const r = document.caretRangeFromPoint(x, y);
+      if(r){ node = r.startContainer; offset = r.startOffset; }
+    } else if(document.caretPositionFromPoint){
+      const p = document.caretPositionFromPoint(x, y);
+      if(p){ node = p.offsetNode; offset = p.offset; }
+    }
+    if(!node || node.nodeType !== 3) return null;
+    const text = node.textContent;
+    let i = Math.min(offset, text.length - 1);
+    if(i < 0) return null;
+    const ch = text[i];
+    const cands = [];
+
+    if(WORD.test(ch)){
+      // ドット・ハイフン込みの長いトークン (例: JSON.parse, border-radius)
+      let s = i, e = i;
+      while(s > 0 && TOKEN.test(text[s-1])) s--;
+      while(e < text.length - 1 && TOKEN.test(text[e+1])) e++;
+      const full = text.slice(s, e+1).replace(/^[.\-]+|[.\-]+$/g, '');
+      // カーソル直下の単語だけ (例: map)
+      let ws = i, we = i;
+      while(ws > 0 && WORD.test(text[ws-1])) ws--;
+      while(we < text.length - 1 && WORD.test(text[we+1])) we++;
+      const word = text.slice(ws, we+1);
+      cands.push(full);
+      // ドット区切りの隣接ペア (例: console.log / response.json)
+      const parts = full.split('.');
+      for(let k = 0; k < parts.length - 1; k++){
+        if(parts[k] && parts[k+1]) cands.push(parts[k] + '.' + parts[k+1]);
+      }
+      cands.push(word);
+    } else if(SYM.test(ch)){
+      let s = i, e = i;
+      while(s > 0 && SYM.test(text[s-1])) s--;
+      while(e < text.length - 1 && SYM.test(text[e+1])) e++;
+      cands.push(text.slice(s, e+1));
+    } else {
+      return null;
+    }
+    return cands;
+  }
+
+  function lookup(cands){
+    for(const c of cands){
+      if(!c) continue;
+      if(Object.prototype.hasOwnProperty.call(dict, c)) return {term: c, entry: dict[c]};
+      const lower = c.toLowerCase();
+      if(lower !== c && Object.prototype.hasOwnProperty.call(dict, lower)) return {term: lower, entry: dict[lower]};
+    }
+    return null;
+  }
+
+  function show(hit, x, y){
+    if(hit.term !== currentTerm){
+      tip.innerHTML =
+        '<span class="g-term">' + escapeHtml(hit.term) + '</span>' +
+        (hit.entry.cat ? '<span class="g-cat">' + escapeHtml(hit.entry.cat) + '</span>' : '') +
+        '<span class="g-desc">' + escapeHtml(hit.entry.desc) + '</span>';
+      currentTerm = hit.term;
+    }
+    tip.style.display = 'block';
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = x + 14, top = y + 18;
+    if(left + w > window.innerWidth - 8) left = window.innerWidth - w - 8;
+    if(top + h > window.innerHeight - 8) top = y - h - 12;
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+  }
+
+  function hide(){
+    tip.style.display = 'none';
+    currentTerm = null;
+  }
+
+  let lastX = -1, lastY = -1;
+  function handle(x, y, target){
+    // コード表示エリアの中だけで反応する
+    if(!(target instanceof Element) || !target.closest('pre.codeblock, code.inline')){
+      hide();
+      return;
+    }
+    const cands = candidatesAt(x, y);
+    const hit = cands && lookup(cands);
+    if(hit) show(hit, x, y); else hide();
+  }
+
+  document.addEventListener('mousemove', (ev)=>{
+    if(Math.abs(ev.clientX - lastX) < 3 && Math.abs(ev.clientY - lastY) < 3) return;
+    lastX = ev.clientX; lastY = ev.clientY;
+    handle(ev.clientX, ev.clientY, ev.target);
+  }, {passive: true});
+
+  // タッチ端末用: コード内をタップでも表示
+  document.addEventListener('click', (ev)=>{
+    handle(ev.clientX, ev.clientY, ev.target);
+  });
+
+  document.addEventListener('scroll', hide, {passive: true, capture: true});
 })();
 </script>
 </body>
