@@ -4,6 +4,9 @@
 
 Claude.ai の artifacts 機能で作成した、単一HTMLファイルの学習アプリです。
 
+- **公開URL**: https://yomitoki-code.vercel.app (Vercel / mainブランチ連動)
+- **リポジトリ**: https://github.com/blancat00/yomitoki-code
+
 ## 機能
 
 | タブ | 内容 | AI |
