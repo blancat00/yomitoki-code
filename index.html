@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>よみときコード</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Klee+One:wght@600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EAEDE4;
+    --paper-deep:#E1E5D8;
+    --line:#CBCFBC;
+    --ink:#20293A;
+    --ink-soft:#5B6478;
+    --card:#F6F7F1;
+    --rust:#A63D2F;
+    --rust-soft:#E9D7CE;
+    --blue:#2B5C8A;
+    --blue-soft:#D8E2EA;
+    --green:#3C7A5D;
+    --green-soft:#DCE7DE;
+    --amber:#B07E23;
+    --amber-soft:#EFE4CC;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    line-height:1.75;
+  }
+  .app{max-width:980px;margin:0 auto;padding:28px 20px 80px;}
+
+  header.hero{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  header.hero .title{
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:34px;
+    letter-spacing:.04em;
+  }
+  header.hero .title small{
+    display:block;
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:500;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  .page-no{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  nav.tabs{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;}
+  nav.tabs button{
+    font-family:'Shippori Mincho', serif;
+    font-weight:700;
+    font-size:15px;
+    background:var(--paper-deep);
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:10px 18px 12px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    position:relative;
+    top:2px;
+    transition:.15s;
+  }
+  nav.tabs button .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    display:block;
+    color:var(--ink-soft);
+    margin-bottom:2px;
+    letter-spacing:.1em;
+  }
+  nav.tabs button.active{
+    background:var(--card);
+    color:var(--ink);
+    border-color:var(--ink);
+    border-bottom:1px solid var(--card);
+    top:0;
+  }
+  nav.tabs button:hover:not(.active){color:var(--ink);}
+
+  section.panel{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:0 8px 8px 8px;
+    padding:28px;
+    min-height:420px;
+  }
+  section.panel h2{font-family:'Shippori Mincho', serif;font-size:22px;margin:0 0 6px;}
+  .lead{color:var(--ink-soft);font-size:14px;margin-bottom:22px;}
+
+  textarea, input[type=text]{
+    width:100%;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    color:var(--ink);
+    resize:vertical;
+  }
+  textarea{min-height:160px;}
+  label.field-label{
+    display:block;font-size:13px;font-weight:700;margin:16px 0 6px;color:var(--ink-soft);
+  }
+  label.field-label:first-of-type{margin-top:0;}
+
+  button.action{
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:700;font-size:14px;
+    background:var(--ink);color:var(--paper);
+    border:none;padding:12px 26px;border-radius:100px;
+    cursor:pointer;margin-top:18px;transition:.15s;
+  }
+  button.action:hover{background:var(--rust);}
+  button.action:disabled{background:var(--ink-soft);cursor:wait;}
+
+  /* code display */
+  pre.codeblock{
+    background:#272C38;
+    color:#E8EAF0;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    line-height:1.6;
+    padding:14px 16px;
+    border-radius:var(--radius);
+    overflow-x:auto;
+    margin:10px 0;
+    white-space:pre;
+  }
+  code.inline{
+    font-family:'JetBrains Mono', monospace;
+    font-size:.9em;
+    background:#fff;
+    border:1px solid var(--line);
+    padding:1px 6px;
+    border-radius:5px;
+    white-space:nowrap;
+  }
+  .annotation code.inline{background:rgba(255,255,255,.75);}
+
+  .annotation{
+    position:relative;margin:14px 0 14px 26px;
+    padding:12px 16px;border-radius:var(--radius);
+    border-left:3px solid var(--blue);background:var(--blue-soft);
+  }
+  .annotation.warn{border-left-color:var(--rust);background:var(--rust-soft);}
+  .annotation.ok{border-left-color:var(--green);background:var(--green-soft);}
+  .annotation .tag{
+    font-family:'Klee One', cursive;font-weight:600;font-size:14px;
+    color:var(--blue);display:inline-block;transform:rotate(-1.5deg);margin-bottom:4px;
+  }
+  .annotation.warn .tag{color:var(--rust);}
+  .annotation.ok .tag{color:var(--green);}
+  .annotation .body{font-size:14px;overflow-wrap:break-word;}
+  .annotation .body pre.codeblock{margin:8px 0;}
+
+  .summary-card{
+    background:var(--paper-deep);border:1px dashed var(--ink-soft);
+    border-radius:var(--radius);padding:16px 18px;margin-bottom:20px;font-size:14px;
+  }
+  .result-wrap{margin-top:26px;border-top:1px solid var(--line);padding-top:20px;}
+  .loading{font-family:'JetBrains Mono', monospace;font-size:13px;color:var(--ink-soft);margin-top:16px;}
+  .error-box{
+    margin-top:16px;padding:12px 16px;background:var(--rust-soft);
+    border-radius:var(--radius);color:var(--rust);font-size:13px;
+  }
+
+  /* learn */
+  .cat-heading{
+    font-family:'JetBrains Mono', monospace;font-size:11px;letter-spacing:.12em;
+    color:var(--ink-soft);margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:4px;
+  }
+  .cat-heading:first-of-type{margin-top:6px;}
+  .concept-grid{
+    display:grid;grid-template-columns:repeat(auto-fill, minmax(215px,1fr));gap:12px;
+  }
+  .concept-card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;cursor:pointer;transition:.15s;
+  }
+  .concept-card:hover{border-color:var(--ink);transform:translateY(-2px);}
+  .concept-card h3{font-family:'Shippori Mincho', serif;font-size:15.5px;margin:0 0 4px;}
+  .concept-card p{font-size:12px;color:var(--ink-soft);margin:0;}
+  .concept-card .done{
+    font-family:'JetBrains Mono', monospace;font-size:10px;color:var(--green);margin-top:6px;display:block;
+  }
+
+  .drawer{
+    margin-top:22px;background:var(--paper-deep);border-radius:var(--radius);
+    padding:22px;display:none;
+  }
+  .drawer.open{display:block;}
+  .drawer h3{font-family:'Shippori Mincho', serif;margin-top:0;font-size:19px;}
+  .drawer .body-text{font-size:14px;}
+  .drawer .body-text p{margin:10px 0;}
+  .drawer .body-text ul{margin:8px 0;padding-left:22px;}
+  .drawer .body-text li{margin:4px 0;}
+
+  /* quiz */
+  .quiz-box{margin-top:22px;border-top:1px dashed var(--ink-soft);padding-top:18px;}
+  .quiz-q{font-weight:700;font-size:14.5px;margin-bottom:6px;}
+  .quiz-progress{font-family:'JetBrains Mono', monospace;font-size:11px;color:var(--ink-soft);margin-bottom:10px;}
+  .choice{
+    display:block;width:100%;text-align:left;
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:11px 14px;margin:8px 0;font-size:14px;cursor:pointer;
+    font-family:'Zen Kaku Gothic New', sans-serif;transition:.12s;
+  }
+  .choice:hover{border-color:var(--ink);}
+  .choice.correct{border-color:var(--green);background:var(--green-soft);}
+  .choice.wrong{border-color:var(--rust);background:var(--rust-soft);}
+  .choice:disabled{cursor:default;}
+  .quiz-explain{margin-top:10px;}
+  .quiz-score{
+    font-family:'Shippori Mincho', serif;font-size:18px;font-weight:700;margin-top:14px;
+  }
+
+  /* column tab */
+  .col-section{margin-top:22px;}
+  .col-section h3{
+    font-family:'Shippori Mincho', serif;font-size:18px;margin:0 0 4px;
+  }
+  .col-section .col-lead{font-size:13px;color:var(--ink-soft);margin-bottom:12px;}
+  .resource{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 18px;margin:10px 0;
+  }
+  .resource h4{margin:0 0 4px;font-size:15px;font-family:'Shippori Mincho', serif;}
+  .resource p{margin:6px 0 0;font-size:13px;color:var(--ink-soft);}
+  .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .badge{
+    font-family:'JetBrains Mono', monospace;font-size:10.5px;
+    padding:3px 9px;border-radius:100px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper);
+  }
+  .badge.time{border-color:var(--blue);color:var(--blue);background:var(--blue-soft);}
+  .badge.lang{border-color:var(--green);color:var(--green);background:var(--green-soft);}
+  .badge.lvl{border-color:var(--amber);color:var(--amber);background:var(--amber-soft);}
+
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
+  .chip{
+    font-family:'JetBrains Mono', monospace;font-size:11px;background:var(--paper);
+    border:1px solid var(--line);padding:4px 10px;border-radius:100px;color:var(--ink-soft);
+  }
+
+  .history-row{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;}
+  .history-row h4{font-size:12px;letter-spacing:.05em;color:var(--ink-soft);margin:0 0 8px;font-weight:700;}
+  .history-item{
+    font-family:'JetBrains Mono', monospace;font-size:11.5px;color:var(--ink-soft);
+    padding:6px 0;border-bottom:1px dotted var(--line);cursor:pointer;
+  }
+  .history-item:hover{color:var(--ink);}
+
+  footer.note{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:30px;}
+
+  @media (max-width:600px){
+    header.hero{flex-direction:column;align-items:flex-start;gap:8px;}
+    section.panel{padding:18px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hero">
+    <div class="title">よみときコード
+      <small>読む・直す・守る・学ぶ、じぶん専用の学習ノート</small>
+    </div>
+    <div class="page-no">NOTE / 02</div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="learn" class="active"><span class="num">CH.01</span>学ぶ</button>
+    <button data-tab="read"><span class="num">CH.02</span>読む</button>
+    <button data-tab="debug"><span class="num">CH.03</span>直す</button>
+    <button data-tab="secure"><span class="num">CH.04</span>守る</button>
+    <button data-tab="column"><span class="num">CH.05</span>コラム</button>
+  </nav>
+
+  <!-- LEARN -->
+  <section class="panel" id="panel-learn">
+    <h2>学ぶ ― 土台をつくる</h2>
+    <div class="lead">AI×業務効率化エンジニアのロードマップに沿った基礎知識です。カードを開いて読み、理解度チェック(選択式・全問アプリ内蔵)で確認しましょう。</div>
+    <div id="conceptArea"></div>
+    <div class="drawer" id="learnDrawer">
+      <h3 id="drawerTitle"></h3>
+      <div class="body-text" id="drawerBody"></div>
+      <div class="quiz-box">
+        <button class="action" id="quizStartBtn" style="margin-top:0;">理解度チェックを始める</button>
+        <div id="quizArea"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- READ -->
+  <section class="panel" id="panel-read" style="display:none;">
+    <h2>読む ― コードに注釈をつける</h2>
+    <div class="lead">読めないコードを貼り付けると、意味のまとまりごとに注釈をつけて解説します。</div>
+    <label class="field-label">コード</label>
+    <textarea id="readCode" placeholder="ここにコードを貼り付け…"></textarea>
+    <button class="action" id="readBtn">解説してもらう</button>
+    <div class="result-wrap" id="readResult"></div>
+    <div class="history-row" id="readHistory"></div>
+  </section>
+
+  <!-- DEBUG -->
+  <section class="panel" id="panel-debug" style="display:none;">
+    <h2>直す ― 原因を突き止める</h2>
+    <div class="lead">コードとエラーメッセージを貼り付けると、原因の仮説と直し方、再発防止のヒントを出します。</div>
+    <label class="field-label">コード</label>
+    <textarea id="debugCode" placeholder="うまく動かないコード…"></textarea>
+    <label class="field-label">エラーメッセージ / 症状</label>
+    <textarea id="debugError" style="min-height:90px;" placeholder="出ているエラーや、期待と違う挙動…"></textarea>
+    <button class="action" id="debugBtn">原因を調べてもらう</button>
+    <div class="result-wrap" id="debugResult"></div>
+    <div class="history-row" id="debugHistory"></div>
+  </section>
+
+  <!-- SECURE -->
+  <section class="panel" id="panel-secure" style="display:none;">
+    <h2>守る ― 危ないところを見つける</h2>
+    <div class="lead">コードを貼り付けると、よくある脆弱性や設計上のリスクを指摘します。</div>
+    <label class="field-label">コード</label>
+    <textarea id="secCode" placeholder="チェックしたいコード…"></textarea>
+    <button class="action" id="secBtn">セキュリティをチェックしてもらう</button>
+    <div class="result-wrap" id="secResult"></div>
+    <div class="history-row" id="secHistory"></div>
+  </section>
+
+  <!-- COLUMN -->
+  <section class="panel" id="panel-column" style="display:none;">
+    <h2>コラム ― 外の世界で学ぶ</h2>
+    <div class="lead">アプリの外にも良質な教材はたくさんあります。使える時間に合わせて選んでください。</div>
+
+    <div class="col-section">
+      <h3>☕ すきま時間に(〜15分)</h3>
+      <div class="col-lead">通勤中や子どもの昼寝タイムなど、短い時間でサッと読める・見られるもの。</div>
+      <div class="resource">
+        <h4>ドットインストール</h4>
+        <p>1本3分の動画でプログラミングを学べる日本のサービス。JavaScript基礎の講座から始めるのがおすすめ。1本だけ見る、が続けやすい。</p>
+        <div class="badge-row"><span class="badge time">1本 約3分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
+      </div>
+      <div class="resource">
+        <h4>MDN Web Docs</h4>
+        <p>Mozillaが運営するWeb技術の公式リファレンス。「読む」タブで出てきた用語を調べる辞書として使うのが◎。1記事5〜15分。</p>
+        <div class="badge-row"><span class="badge time">1記事 5〜15分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜上級</span></div>
+      </div>
+      <div class="resource">
+        <h4>JavaScript.info(日本語版)</h4>
+        <p>JavaScriptを体系的に、丁寧に解説した教科書サイト。1章10〜20分。ロードマップのSTEP1〜3の内容がほぼカバーされている。</p>
+        <div class="badge-row"><span class="badge time">1章 10〜20分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
+      </div>
+      <div class="resource">
+        <h4>Zenn / Qiita</h4>
+        <p>日本のエンジニアによる技術記事サイト。「fetch API 使い方」など具体的な悩みで検索すると実例つきの記事が見つかる。1記事5〜10分。</p>
+        <div class="badge-row"><span class="badge time">1記事 5〜10分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜上級</span></div>
+      </div>
+    </div>
+
+    <div class="col-section">
+      <h3>📚 まとまった時間に(1時間〜)</h3>
+      <div class="col-lead">休日など、腰を据えて学べるときに。理解が一段深まるものを揃えました。</div>
+      <div class="resource">
+        <h4>CS50(ハーバード大学)</h4>
+        <p>ハーバード大学が無料公開しているコンピュータサイエンス入門講義。YouTubeで全講義が見られる。メモリやデータ構造など「コードの裏側で何が起きているか」の理解が深まる。英語だが日本語字幕あり、有志の日本語翻訳サイト(cs50.jp)も存在する。</p>
+        <div class="badge-row"><span class="badge time">1講義 90〜120分</span><span class="badge lang">英語(日本語字幕あり)</span><span class="badge lvl">初級〜中級</span></div>
+      </div>
+      <div class="resource">
+        <h4>Progate</h4>
+        <p>ブラウザ上で手を動かしながら学べる日本のサービス。環境構築不要でスライド+演習形式。基礎の復習・穴埋めに最適。無料枠あり。</p>
+        <div class="badge-row"><span class="badge time">1レッスン 30〜60分</span><span class="badge lang">日本語</span><span class="badge lvl">初級</span></div>
+      </div>
+      <div class="resource">
+        <h4>freeCodeCamp</h4>
+        <p>無料で演習中心に学べる海外の定番サービス。JavaScriptアルゴリズムのコースは実力がつくと評判。YouTubeチャンネルの長編チュートリアルも豊富。</p>
+        <div class="badge-row"><span class="badge time">1セクション 1〜3時間</span><span class="badge lang">英語</span><span class="badge lvl">初級〜中級</span></div>
+      </div>
+      <div class="resource">
+        <h4>roadmap.sh</h4>
+        <p>エンジニアの学習ロードマップ集。「Frontend」「JavaScript」「AI Engineer」「Backend」を眺めて、自分の現在地と次に学ぶことを確認するのに使う。地図として月1回見返すのがおすすめ。</p>
+        <div class="badge-row"><span class="badge time">眺めるだけなら15分</span><span class="badge lang">英語</span><span class="badge lvl">全レベル</span></div>
+      </div>
+      <div class="resource">
+        <h4>IPA「安全なウェブサイトの作り方」</h4>
+        <p>情報処理推進機構(IPA)が無料公開しているセキュリティの定番資料。XSSやSQLインジェクションなど主要な脆弱性と対策が日本語でまとまっている。「守る」タブの内容を深掘りしたいときに。</p>
+        <div class="badge-row"><span class="badge time">通読 2〜3時間</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note">Claude in Claude で動作 ・ 追加のAPI課金なし ・ 学ぶ/コラムはAIなしでも利用可</footer>
+</div>
+
+<script>
+/* ---------- storage shim: claude.aiのartifacts外(GitHub Pages・ローカル等)ではlocalStorageで代替 ---------- */
+if (typeof window.storage === 'undefined') {
+  window.storage = {
+    async get(key){
+      const v = localStorage.getItem('yomitoki:' + key);
+      if (v === null) throw new Error('key not found: ' + key);
+      return { key, value: v };
+    },
+    async set(key, value){
+      localStorage.setItem('yomitoki:' + key, String(value));
+      return { key, value };
+    },
+    async delete(key){
+      localStorage.removeItem('yomitoki:' + key);
+      return { key, deleted: true };
+    },
+    async list(prefix = ''){
+      const keys = Object.keys(localStorage)
+        .filter(k => k.startsWith('yomitoki:' + prefix))
+        .map(k => k.replace('yomitoki:', ''));
+      return { keys };
+    }
+  };
+}
+
+/* ---------- Tabs ---------- */
+const tabs = document.querySelectorAll('#tabs button');
+tabs.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    tabs.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['learn','read','debug','secure','column'].forEach(name=>{
+      document.getElementById('panel-'+name).style.display = (name===btn.dataset.tab)?'block':'none';
+    });
+  });
+});
+
+/* ---------- helpers ---------- */
+function escapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+/* AIの返答内の ```コードブロック``` と `インラインコード` を安全にHTML化する */
+function formatAiText(str){
+  let s = escapeHtml(str);
+  s = s.replace(/```[a-zA-Z]*\n([\s\S]*?)```/g, (m, code)=>'<pre class="codeblock">'+code.replace(/\n$/,'')+'</pre>');
+  s = s.replace(/`([^`\n]+)`/g, '<code class="inline">$1</code>');
+  s = s.replace(/\n/g,'<br>');
+  s = s.replace(/<br><pre/g,'<pre').replace(/<\/pre><br>/g,'</pre>');
+  return s;
+}
+
+async function callClaude(system, userText){
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      system: system,
+      messages: [{ role: "user", content: userText }]
+    })
+  });
+  if(!response.ok) throw new Error("API呼び出しに失敗しました ("+response.status+")");
+  const data = await response.json();
+  return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+}
+function parseJSON(text){
+  const cleaned = text.replace(/```json/g,'').replace(/```/g,'').trim();
+  return JSON.parse(cleaned);
+}
+
+/* ---------- Storage ---------- */
+async function saveHistory(key, entry){
+  try{
+    let list = [];
+    try{
+      const r = await window.storage.get(key);
+      if(r && r.value) list = JSON.parse(r.value);
+    }catch(e){ list = []; }
+    list.unshift(entry);
+    list = list.slice(0,5);
+    await window.storage.set(key, JSON.stringify(list));
+    return list;
+  }catch(e){ return null; }
+}
+async function loadHistory(key){
+  try{
+    const r = await window.storage.get(key);
+    if(r && r.value) return JSON.parse(r.value);
+  }catch(e){}
+  return [];
+}
+function renderHistory(container, list, onClick){
+  if(!list || list.length===0){ container.innerHTML=''; return; }
+  container.innerHTML = '<h4>さいきんの記録</h4>' +
+    list.map((item,i)=>'<div class="history-item" data-i="'+i+'">'+escapeHtml(item.label)+'</div>').join('');
+  container.querySelectorAll('.history-item').forEach(el=>{
+    el.addEventListener('click', ()=> onClick(list[+el.dataset.i]));
+  });
+}
+
+/* ================= LEARN: 教材データ ================= */
+/* body内のコードはすべてエスケープ済み。cb()でコードブロック生成 */
+function cb(code){ return '<pre class="codeblock">'+escapeHtml(code)+'</pre>'; }
+function ic(code){ return '<code class="inline">'+escapeHtml(code)+'</code>'; }
+
+const concepts = [
+/* ===== STEP1 基礎固め ===== */
+{id:'var', cat:'STEP1 基礎固め', title:'変数とデータ型', desc:'値に名前をつけて覚えておく仕組み',
+ body:`<p>変数は「値を入れておく箱に名前をつけたもの」です。</p>`
+ + cb(`let age = 6;        // 数値
+const name = "太郎"; // 文字列(変更しない値は const)
+let isBaby = true;   // 真偽値(true / false)`)
+ + `<p>${ic('let')} は後から中身を変えられる変数、${ic('const')} は変えられない変数です。迷ったらまず ${ic('const')} を使い、変更が必要なときだけ ${ic('let')} にすると、コードが読みやすくなります。</p>
+ <p>データには型(種類)があります。主なものは、数値・文字列・真偽値・配列(リスト)・オブジェクト・${ic('null')}(空)・${ic('undefined')}(未定義)です。コードを読むときは「この変数には何の型が入っているか」を意識すると、動きが追いやすくなります。</p>`,
+ quiz:[
+  {q:'変更する予定のない値を宣言するとき、推奨される書き方はどれ?', choices:['var price = 100;','let price = 100;','const price = 100;'], answer:2, explain:'変更しない値は const で宣言すると、「この値は途中で変わらない」と読み手に伝わり、うっかり書き換えるミスも防げます。'},
+  {q:'let count = "3"; の count に入っているデータの型は?', choices:['数値','文字列','真偽値'], answer:1, explain:'引用符(" ")で囲まれた値は文字列です。数値の3ではなく文字の"3"なので、計算に使うと意図しない結果になることがあります。'}
+ ]},
+
+{id:'func', cat:'STEP1 基礎固め', title:'関数', desc:'処理をひとまとめにして名前をつける',
+ body:`<p>関数は「よく使う処理をひとまとめにして、名前をつけたもの」です。</p>`
+ + cb(`function greet(name) {
+  return "こんにちは、" + name;
+}
+
+const message = greet("太郎"); // "こんにちは、太郎"`)
+ + `<p>${ic('name')} のように関数が受け取る値を<b>引数(ひきすう)</b>、${ic('return')} で返す値を<b>戻り値</b>と呼びます。</p>
+ <p>最近のコードでは<b>アロー関数</b>という書き方もよく登場します。意味は同じです。</p>`
+ + cb(`const greet = (name) => {
+  return "こんにちは、" + name;
+};`)
+ + `<p>コードを読んでいて知らない単語(関数名)が出てきたら、「その関数が定義されている場所」を探すのが読解のコツです。</p>`,
+ quiz:[
+  {q:'関数が受け取る値のことを何と呼ぶ?', choices:['戻り値','引数','変数'], answer:1, explain:'関数に渡す値が引数、関数が return で返す値が戻り値です。この2語はエラーメッセージや解説記事に頻出するので覚えておきましょう。'},
+  {q:'const f = (x) => { return x * 2; }; と同じ意味の書き方は?', choices:['function f(x) { return x * 2; }','function f() { return x * 2; }','const f = x * 2;'], answer:0, explain:'アロー関数は function を使った関数定義の別の書き方です。引数xを受け取って2倍を返す、という意味は同じです。'}
+ ]},
+
+{id:'loop', cat:'STEP1 基礎固め', title:'条件分岐とループ', desc:'状況に応じて処理を変える・繰り返す',
+ body:`<p><b>条件分岐(if文)</b>は「もし〜なら、こうする」という処理です。</p>`
+ + cb(`if (age < 3) {
+  console.log("乳幼児");
+} else if (age < 18) {
+  console.log("未成年");
+} else {
+  console.log("大人");
+}`)
+ + `<p><b>ループ(for文)</b>は「同じ処理を繰り返す」仕組みです。</p>`
+ + cb(`for (let i = 0; i < 3; i++) {
+  console.log(i); // 0, 1, 2 と表示される
+}`)
+ + `<p>配列に対しては ${ic('for...of')} や ${ic('forEach')} という書き方もよく使われます。</p>`
+ + cb(`const fruits = ["りんご", "みかん"];
+for (const f of fruits) {
+  console.log(f);
+}`)
+ + `<p>複雑に見えるコードも、まずif文とループの境目(どこからどこまでが繰り返されているか)を見つけると全体像がつかめます。</p>`,
+ quiz:[
+  {q:'for (let i = 0; i < 5; i++) のループは何回実行される?', choices:['4回','5回','6回'], answer:1, explain:'iは0,1,2,3,4と変化し、i < 5 の条件を満たす間実行されるので5回です。「0から始まる」のがポイントで、回数の数え間違いはバグの定番です。'},
+  {q:'if (score >= 80) の条件が成り立つのはどれ?', choices:['score が 79 のとき','score が 80 のとき','score が "80点" のとき'], answer:1, explain:'>= は「以上」なので80ちょうども含みます。> (より大きい)との違いに注意。また "80点" は文字列なので数値の比較には向きません。'}
+ ]},
+
+{id:'data', cat:'STEP1 基礎固め', title:'配列とオブジェクト', desc:'複数のデータをまとめて扱う',
+ body:`<p><b>配列</b>は順番に並んだデータのリストです。0番から数えます。</p>`
+ + cb(`const items = ["A", "B", "C"];
+console.log(items[0]); // "A"
+console.log(items.length); // 3`)
+ + `<p><b>オブジェクト</b>は名前(キー)と値のペアの集まりです。</p>`
+ + cb(`const user = { name: "太郎", age: 6 };
+console.log(user.name);    // "太郎"
+console.log(user["age"]);  // 6 (こう書いても同じ)`)
+ + `<p>実際のデータは、この2つの組み合わせでできています。たとえば「ユーザーのリスト」は<b>オブジェクトの配列</b>です。</p>`
+ + cb(`const users = [
+  { name: "太郎", age: 6 },
+  { name: "花子", age: 3 }
+];
+console.log(users[1].name); // "花子"`)
+ + `<p>${ic('data[0]')} や ${ic('user.name')} を見たら、「配列の何番目か」「オブジェクトのどの項目か」を確認する癖をつけると読み違いが減ります。</p>`,
+ quiz:[
+  {q:'const arr = ["a", "b", "c"]; のとき arr[1] の値は?', choices:['"a"','"b"','"c"'], answer:1, explain:'配列は0番から数えるので、arr[0]が"a"、arr[1]が"b"です。「1番目のつもりが0番目だった」は初学者の定番ミスです。'},
+  {q:'const user = { name: "太郎" }; から "太郎" を取り出す書き方は?', choices:['user(name)','user.name','user->name'], answer:1, explain:'オブジェクトの値は「オブジェクト名.キー名」で取り出します。user["name"] という書き方でも同じ結果になります。'}
+ ]},
+
+{id:'dom', cat:'STEP1 基礎固め', title:'DOM操作', desc:'JavaScriptからページの要素を触る',
+ body:`<p>DOM(ドム)とは、HTMLの各要素をJavaScriptから操作できるようにした仕組みです。「ボタンを押したら文字が変わる」ような動きは、すべてDOM操作でできています。</p>`
+ + cb(`<p id="msg">こんにちは</p>`)
+ + cb(`// id="msg" の要素を取得する
+const el = document.getElementById("msg");
+
+// 文字を書き換える
+el.textContent = "こんばんは";
+
+// 見た目(スタイル)を変える
+el.style.color = "red";`)
+ + `<p>要素の取得には ${ic('document.querySelector(".クラス名")')} もよく使われます。</p>
+ <p>コードを読むときは、${ic('document.')} で始まる行を見たら「ページ上のどの要素を触っているのか」をHTML側と照らし合わせるのがコツです。</p>`,
+ quiz:[
+  {q:'id="title" の要素を取得する書き方はどれ?', choices:['document.getElementById("title")','document.getId("title")','getElement("title")'], answer:0, explain:'getElementById はDOM操作の最も基本的なメソッドです。querySelector("#title") でも同じ要素を取得できます。'},
+  {q:'取得した要素 el の表示テキストを変えるには?', choices:['el.textContent = "新しい文字";','el = "新しい文字";','el.text("新しい文字");'], answer:0, explain:'textContent プロパティに代入すると表示テキストが変わります。el 自体に代入すると要素への参照が消えてしまうので注意。'}
+ ]},
+
+{id:'event', cat:'STEP1 基礎固め', title:'イベント', desc:'クリックや入力に反応する',
+ body:`<p>イベントとは「クリックされた」「文字が入力された」などの出来事のこと。それに反応して処理を実行するのが<b>イベントリスナー</b>です。</p>`
+ + cb(`const btn = document.getElementById("myBtn");
+
+btn.addEventListener("click", () => {
+  alert("クリックされました");
+});`)
+ + `<p>よく使うイベントの種類:</p>
+ <ul>
+  <li>${ic('click')} … クリックされたとき</li>
+  <li>${ic('input')} … 入力欄の内容が変わったとき</li>
+  <li>${ic('change')} … 選択肢が変わったとき</li>
+  <li>${ic('submit')} … フォームが送信されたとき</li>
+ </ul>
+ <p>コードを読むとき、${ic('addEventListener')} を見つけたら「何がきっかけで・どの処理が動くのか」のペアで理解しましょう。アプリの動きの起点はほぼここにあります。</p>`,
+ quiz:[
+  {q:'ボタンがクリックされたときに処理を実行するには?', choices:['btn.addEventListener("click", 処理)','btn.onClick = "処理"','click(btn, 処理)'], answer:0, explain:'addEventListener("イベント名", 関数) が基本形です。第1引数がきっかけ、第2引数が実行する処理(関数)です。'},
+  {q:'入力欄の内容が変わるたびに反応したいとき、使うイベント名は?', choices:['"click"','"input"','"load"'], answer:1, explain:'"input" は入力内容が変わるたびに発生します。検索欄のリアルタイム絞り込みなどでよく使われます。'}
+ ]},
+
+{id:'debugthink', cat:'STEP1 基礎固め', title:'デバッグの基本(エラーの見方)', desc:'原因を効率よく絞り込む',
+ body:`<p>デバッグの基本は「範囲を半分ずつ絞っていく」ことです。</p>
+ <ul>
+  <li><b>1. エラーメッセージを読む</b>:ファイル名と行番号、エラーの種類が書かれています。たとえば ${ic('TypeError: Cannot read properties of undefined')} は「中身が undefined のものからプロパティを読もうとした」という意味です。</li>
+  <li><b>2. 変数の中身を確認する</b>:${ic('console.log(変数名)')} を怪しい場所に入れて、想定通りの値が入っているか見ます。ブラウザでは F12 キーで開発者ツールを開くと確認できます。</li>
+  <li><b>3. どこまで正しいかを特定する</b>:「ここまでは動いている」という地点を見つけ、そこから先だけを疑います。</li>
+ </ul>
+ <p>よく見るエラーの例:</p>
+ <ul>
+  <li>${ic('SyntaxError')} … 書き方の間違い(括弧の閉じ忘れなど)</li>
+  <li>${ic('ReferenceError')} … 存在しない変数を使った</li>
+  <li>${ic('TypeError')} … 型が想定と違う操作をした</li>
+ </ul>
+ <p>闇雲に直すのではなく、「どこで想定と実際がズレたか」を特定するのが最短ルートです。</p>`,
+ quiz:[
+  {q:'「ReferenceError: userName is not defined」の意味は?', choices:['userNameという変数が定義されていない(存在しない)','userNameの型が間違っている','userNameが空文字である'], answer:0, explain:'ReferenceErrorは「その名前の変数が見つからない」という意味。変数名のスペルミスや、定義前に使ってしまったケースが多いです。'},
+  {q:'変数に想定通りの値が入っているか確認する、最も手軽な方法は?', choices:['コードを最初から書き直す','console.log(変数名) で出力して見る','エラーが消えるまで行を削除する'], answer:1, explain:'console.log はデバッグの基本道具です。「どこまでは正しいか」を特定するために、怪しい場所の前後で値を出力して比べます。'}
+ ]},
+
+/* ===== STEP2 作りながら学ぶ ===== */
+{id:'storage', cat:'STEP2 作りながら学ぶ', title:'データの保存(ストレージ)', desc:'閉じても消えないデータの持ち方',
+ body:`<p>変数の中身は、ページを閉じると消えてしまいます。データを残すには<b>ストレージ(保存領域)</b>に書き込みます。</p>
+ <p>ブラウザで手軽なのは localStorage です。キー(名前)と値のペアで保存します。</p>`
+ + cb(`// 保存(値は文字列にする必要がある)
+localStorage.setItem("memo", JSON.stringify({ text: "牛乳を買う" }));
+
+// 読み出し
+const raw = localStorage.getItem("memo");
+const memo = JSON.parse(raw); // 文字列をオブジェクトに戻す`)
+ + `<p>ポイントは ${ic('JSON.stringify')}(オブジェクト→文字列)と ${ic('JSON.parse')}(文字列→オブジェクト)の変換です。ストレージは基本的に文字列しか保存できないため、この変換が必ずセットで登場します。</p>
+ <p>※このアプリのようなClaudeのartifacts内では localStorage は使えず、専用の window.storage を使います。環境によって使えるストレージが違う、という点も覚えておくと役立ちます。</p>`,
+ quiz:[
+  {q:'オブジェクトを文字列に変換して保存できる形にする関数は?', choices:['JSON.parse','JSON.stringify','String.convert'], answer:1, explain:'stringify(文字列化)で保存し、読み出すときにparse(解析)で元に戻します。方向を逆にするとエラーになる、初学者の定番つまずきポイントです。'},
+  {q:'ページを閉じるとデータが消えてしまうのはどれ?', choices:['localStorageに保存した値','ふつうの変数(let/const)に入れた値','ファイルに書き出した値'], answer:1, explain:'変数はメモリ上にあるだけなので、ページを閉じれば消えます。残したいデータはストレージやファイル、データベースに保存します。'}
+ ]},
+
+{id:'module', cat:'STEP2 作りながら学ぶ', title:'関数を分ける(モジュール化)', desc:'読みやすく直しやすいコードの形',
+ body:`<p>すべての処理を1つの長い塊で書くと、読むのも直すのも大変になります。<b>「1つの関数は1つの仕事だけ」</b>に分けるのがモジュール化の第一歩です。</p>
+ <p>悪い例(全部入り):</p>`
+ + cb(`btn.addEventListener("click", () => {
+  // 入力チェックも、計算も、表示も、全部ここに書く…(50行)
+});`)
+ + `<p>良い例(仕事ごとに分ける):</p>`
+ + cb(`function validate(input) { /* 入力チェックだけ */ }
+function calc(data) { /* 計算だけ */ }
+function render(result) { /* 表示だけ */ }
+
+btn.addEventListener("click", () => {
+  const input = getInput();
+  if (!validate(input)) return;
+  render(calc(input));
+});`)
+ + `<p>分けておくと、「計算がおかしい」ときは ${ic('calc')} だけを疑えばよくなり、デバッグが一気に楽になります。AIにコードを直してもらうときも、関数単位で渡せるので指示がしやすくなります。</p>`,
+ quiz:[
+  {q:'関数を分ける最大のメリットは?', choices:['ファイルサイズが小さくなる','問題の場所を特定しやすく、直しやすくなる','実行速度が必ず速くなる'], answer:1, explain:'仕事ごとに関数が分かれていると、「どの仕事がおかしいか」で疑う範囲を絞れます。読みやすさ・直しやすさがモジュール化の目的です。'},
+  {q:'「1つの関数」に持たせるのが望ましい仕事の数は?', choices:['1つ','できるだけ多く','最低3つ'], answer:0, explain:'「1関数1仕事」が基本原則です。関数名がその仕事を表すようになり(validate=検証する、render=表示する)、コードが文章のように読めるようになります。'}
+ ]},
+
+/* ===== STEP3 APIとデータ活用 ===== */
+{id:'http', cat:'STEP3 APIとデータ活用', title:'HTTPの仕組み', desc:'Webの通信はリクエストとレスポンス',
+ body:`<p>Webの通信はすべて「<b>リクエスト</b>(お願い)を送り、<b>レスポンス</b>(返事)を受け取る」の繰り返しです。この約束事がHTTPです。</p>
+ <p>リクエストには<b>メソッド</b>という種類があります:</p>
+ <ul>
+  <li>${ic('GET')} … データをください(ページ表示、検索など)</li>
+  <li>${ic('POST')} … データを送ります(フォーム送信、新規作成など)</li>
+  <li>${ic('PUT')} / ${ic('PATCH')} … データを更新します</li>
+  <li>${ic('DELETE')} … データを削除します</li>
+ </ul>
+ <p>レスポンスには<b>ステータスコード</b>という結果の番号がついています:</p>
+ <ul>
+  <li>${ic('200')} … 成功</li>
+  <li>${ic('404')} … 見つからない(URLの間違いなど)</li>
+  <li>${ic('401')} / ${ic('403')} … 認証・権限のエラー</li>
+  <li>${ic('500')} … サーバー側のエラー</li>
+ </ul>
+ <p>API連携でエラーが出たら、まずステータスコードを見ると「自分のリクエストが悪いのか(400番台)、相手側の問題か(500番台)」の切り分けができます。</p>`,
+ quiz:[
+  {q:'ステータスコード404の意味は?', choices:['成功','リソースが見つからない','サーバー内部のエラー'], answer:1, explain:'404 Not Found は「そのURLに該当するものがない」という意味。URLのスペルミスが原因のことが多いです。'},
+  {q:'新しいデータをサーバーに送って登録するとき、一般的に使うメソッドは?', choices:['GET','POST','DELETE'], answer:1, explain:'POSTはデータを送信して何かを作成・処理してもらうときに使います。GETは取得専用で、送るデータもURLに載ってしまうため登録用途には不向きです。'}
+ ]},
+
+{id:'fetch', cat:'STEP3 APIとデータ活用', title:'fetch APIとJSON', desc:'外部からデータを取ってくる',
+ body:`<p>${ic('fetch')} は、JavaScriptからHTTPリクエストを送るための関数です。外部APIとの連携はほぼこれで行います。</p>`
+ + cb(`const response = await fetch("https://api.example.com/weather");
+const data = await response.json(); // JSONをオブジェクトに変換
+console.log(data.temperature);`)
+ + `<p><b>JSON</b>(ジェイソン)は、データをやり取りするための共通フォーマットです。見た目はJavaScriptのオブジェクトとほぼ同じです。</p>`
+ + cb(`{
+  "city": "名古屋",
+  "temperature": 28,
+  "sunny": true
+}`)
+ + `<p>APIのレスポンスはたいていJSONで返ってくるので、${ic('response.json()')} でオブジェクトに変換してから使います。</p>
+ <p>コードを読むときは、fetchの<b>URL(どこから)</b>と、その後の<b>データの取り出し方(何を使うか)</b>に注目すると流れがつかめます。</p>`,
+ quiz:[
+  {q:'fetchで受け取ったレスポンスをオブジェクトとして使うには?', choices:['response.json() で変換する','そのまま response.temperature と書く','JSON.stringify(response) する'], answer:0, explain:'レスポンスの中身はまず response.json() でJavaScriptのオブジェクトに変換します。stringifyは逆方向(オブジェクト→文字列)なので間違いです。'},
+  {q:'JSONの説明として正しいのは?', choices:['JavaScriptでしか使えないデータ形式','データ交換のための共通フォーマットで、多くの言語やAPIで使われる','画像を保存するための形式'], answer:1, explain:'JSONはJavaScript由来の書式ですが、今ではPythonなどあらゆる言語・APIで使われる共通言語です。APIのレスポンスはほぼJSONと思ってOKです。'}
+ ]},
+
+{id:'async', cat:'STEP3 APIとデータ活用', title:'非同期処理(async/await)', desc:'「待つ処理」の書き方',
+ body:`<p>fetchのような通信には時間がかかります。JavaScriptは結果を待たずに次の行へ進んでしまうため、「待ってから続きをやる」仕組みが必要です。それが<b>非同期処理</b>です。</p>
+ <p>今の主流は ${ic('async')} / ${ic('await')} を使う書き方です:</p>`
+ + cb(`async function getWeather() {
+  const response = await fetch("https://api.example.com/weather");
+  const data = await response.json();
+  return data;
+}`)
+ + `<ul>
+  <li>${ic('await')} … 「この処理が終わるまで待つ」の印。${ic('async')}をつけた関数の中でだけ使える</li>
+  <li>${ic('async')} … 「この関数の中でawaitを使います」という宣言</li>
+ </ul>
+ <p>失敗に備えて ${ic('try/catch')} で囲むのが定番の形です:</p>`
+ + cb(`try {
+  const data = await getWeather();
+} catch (error) {
+  console.error("取得に失敗:", error);
+}`)
+ + `<p>「awaitを付け忘れて ${ic('Promise')} という謎のオブジェクトが返ってくる」のは超定番のバグです。データが取れないときは、まずawaitの付け忘れを疑いましょう。</p>`,
+ quiz:[
+  {q:'await の役割は?', choices:['処理を高速化する','非同期処理が終わるのを待ってから次に進む','エラーを無視する'], answer:1, explain:'awaitは「終わるまで待つ」の印です。付け忘れると、結果ではなくPromiseというオブジェクトが返ってきて、その後の処理が壊れます。'},
+  {q:'await が使えるのはどこ?', choices:['どこでも使える','asyncをつけた関数の中(または対応環境のトップレベル)','if文の中だけ'], answer:1, explain:'awaitは基本的にasync関数の中で使います。「await is only valid in async functions」というエラーが出たら、関数にasyncを付け忘れています。'}
+ ]},
+
+/* ===== STEP4 AI連携 ===== */
+{id:'aiapi', cat:'STEP4 AI連携・自動化', title:'AI APIの使い方', desc:'アプリからAIを呼び出す仕組み',
+ body:`<p>ChatGPTやClaudeのようなAIも、実体は「HTTPリクエストで文章を送ると、返答が返ってくるAPI」です。つまりSTEP3までの知識(fetch・JSON・async/await)がそのまま使えます。</p>`
+ + cb(`const response = await fetch("https://api.anthropic.com/v1/messages", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1000,
+    messages: [{ role: "user", content: "こんにちは" }]
+  })
+});
+const data = await response.json();`)
+ + `<p>読み解きのポイント:</p>
+ <ul>
+  <li>${ic('model')} … どのAIモデルを使うか</li>
+  <li>${ic('messages')} … 会話の履歴。${ic('role')} が user(人間)か assistant(AI)かを表す</li>
+  <li>${ic('max_tokens')} … 返答の長さの上限</li>
+ </ul>
+ <p>AIは前回のやり取りを覚えていないので、会話を続けたい場合は<b>過去のmessagesを全部含めて</b>送り直します。このアプリの「読む」「直す」「守る」タブも、まさにこの仕組みで動いています。</p>`,
+ quiz:[
+  {q:'AI APIに「会話の続き」をさせたいときの正しい方法は?', choices:['AIが前回の内容を覚えているので新しい発言だけ送る','過去のやり取り(messages)をすべて含めて送る','同じmodel名を使えば自動で引き継がれる'], answer:1, explain:'APIは1回ごとに記憶がリセットされます。会話履歴をmessages配列として毎回全部送るのが基本です。'},
+  {q:'messagesの中の role: "user" が表すものは?', choices:['アプリの管理者','人間側の発言','AI側の返答'], answer:1, explain:'userが人間側、assistantがAI側の発言です。この2つを交互に並べることで会話の文脈を伝えます。'}
+ ]},
+
+{id:'prompt', cat:'STEP4 AI連携・自動化', title:'プロンプト設計の基本', desc:'AIから安定した出力を得るコツ',
+ body:`<p>アプリにAIを組み込むとき、指示文(プロンプト)の設計が品質を左右します。基本のコツは4つです。</p>
+ <ul>
+  <li><b>役割を与える</b>:「あなたは初学者向けの講師です」のように前提を固定する</li>
+  <li><b>出力形式を指定する</b>:プログラムで扱うなら「JSON形式のみで出力」と明示する</li>
+  <li><b>例を見せる</b>:期待する出力の見本を1つ入れると精度が上がる</li>
+  <li><b>制約を書く</b>:「3項目以内で」「専門用語には補足を」など</li>
+ </ul>
+ <p>アプリ組み込み時の定番プロンプトの形:</p>`
+ + cb(`次のコードを解説してください。
+出力は以下のJSON形式のみ。他のテキストは一切含めないこと:
+{"summary": "一言まとめ", "points": ["ポイント1", "ポイント2"]}`)
+ + `<p>それでもAIはたまに形式を守らないので、受け取る側で ${ic('try/catch')} を使ってJSONの解析失敗に備えるのがセットです。「AIの出力は必ずしも信用しない」前提で受け皿を作るのが、AI連携アプリ設計の鉄則です。</p>`,
+ quiz:[
+  {q:'AIの返答をプログラムで処理したいとき、プロンプトで指定すべきことは?', choices:['できるだけ長く書いてもらう','出力形式(JSONなど)を明示し、余計なテキストを禁止する','敬語で答えてもらう'], answer:1, explain:'形式を固定しないと、返答の形が毎回変わってプログラム側で処理できません。「JSON形式のみ、他のテキストは含めない」が定番の指定です。'},
+  {q:'AIの出力を受け取る側のコードで必要な備えは?', choices:['AIは間違えないので備えは不要','JSONの解析失敗などに備えてtry/catchでエラー処理をする','出力を2回リクエストして比べる'], answer:1, explain:'AIは指定した形式をたまに守りません。解析失敗時にアプリ全体が止まらないよう、try/catchで受け止めて再試行やエラー表示につなげます。'}
+ ]},
+
+/* ===== セキュリティ ===== */
+{id:'xss', cat:'セキュリティ', title:'XSS(クロスサイトスクリプティング)', desc:'ユーザー入力をそのまま表示する危険',
+ body:`<p>ユーザーが入力した文字列を、そのままHTMLとしてページに埋め込むと、悪意のあるスクリプトが実行されてしまうことがあります。これがXSSです。</p>
+ <p>危ない例:</p>`
+ + cb(`// 入力欄の内容をそのままHTMLに入れている
+el.innerHTML = userInput;
+// userInput に <script>…<\/script> や
+// <img src=x onerror=…> が入っていたら実行されてしまう`)
+ + `<p>安全な書き方:</p>`
+ + cb(`// textContent はただの文字として表示する(スクリプトは動かない)
+el.textContent = userInput;`)
+ + `<p>原則は「<b>ユーザー入力は信用せず、表示するときは必ずエスケープ(無害化)する</b>」こと。どうしてもHTMLとして埋め込む必要があるときは、${ic('<')} を ${ic('&lt;')} に変換するなどのエスケープ処理を通してから使います。</p>
+ <p>このアプリでも、AIの返答やコードを画面に出す前にエスケープ処理を通しています。</p>`,
+ quiz:[
+  {q:'ユーザーの入力を画面に表示するとき、より安全なのはどっち?', choices:['el.innerHTML = input;','el.textContent = input;'], answer:1, explain:'textContentは中身をただの文字として扱うため、スクリプトが混ざっていても実行されません。innerHTMLはHTMLとして解釈するのでXSSの入口になります。'},
+  {q:'XSS対策の基本原則は?', choices:['ユーザー入力は信用せず、表示前にエスケープする','入力欄の文字数を制限する','HTTPSを使う'], answer:0, explain:'文字数制限やHTTPSでは防げません。「入力は信用しない・表示時に無害化する」が根本の対策です。'}
+ ]},
+
+{id:'sqli', cat:'セキュリティ', title:'SQLインジェクション', desc:'データベース操作への不正な入力',
+ body:`<p>ユーザーの入力をそのままSQL文(データベースへの命令文)に組み込むと、想定外の操作をされる危険があります。</p>
+ <p>危ない例:</p>`
+ + cb(`// 入力を文字列連結でSQLに埋め込んでいる
+const sql = "SELECT * FROM users WHERE name = '" + input + "'";
+// input に「' OR '1'='1」と入れられると
+// 全ユーザーのデータが取れてしまう`)
+ + `<p>安全な書き方(プレースホルダ):</p>`
+ + cb(`// ? の部分に入力値を「値として」渡す
+const sql = "SELECT * FROM users WHERE name = ?";
+db.query(sql, [input]);`)
+ + `<p>対策は「<b>プレースホルダ(パラメータ化クエリ)を使い、入力値をSQL文と混ぜない</b>」こと。文字列連結でSQLを組み立てているコードを見たら、それだけで危険信号です。</p>`,
+ quiz:[
+  {q:'SQLインジェクションの根本的な対策は?', choices:['入力欄に「\'」を入力禁止にする','プレースホルダ(パラメータ化クエリ)を使う','SQLを暗号化する'], answer:1, explain:'記号の入力禁止は抜け道が多く不完全です。入力値を命令文と分離して「値」としてだけ渡すプレースホルダが根本対策です。'},
+  {q:'コードレビューで危険信号なのはどれ?', choices:['SQL文の中に ? が使われている','文字列連結(+ や テンプレート文字列)でSQL文に入力値を埋め込んでいる','SQL文が大文字で書かれている'], answer:1, explain:'「+ input +」のような連結でSQLを組み立てるのが典型的な脆弱パターンです。? はプレースホルダなのでむしろ安全な印です。'}
+ ]},
+
+{id:'secret', cat:'セキュリティ', title:'APIキー・秘密情報の管理', desc:'コードに直接書かない',
+ body:`<p>APIキーやパスワードをコードに直接書き込むと、GitHubなどに公開した瞬間に漏洩します。漏れたキーは第三者に悪用され、高額請求につながることもあります。</p>
+ <p>危ない例:</p>`
+ + cb(`// キーがコードに直書きされている
+const API_KEY = "sk-abc123..."; // これをGitHubにpushしたら事故`)
+ + `<p>基本のルール:</p>
+ <ul>
+  <li>秘密情報は<b>環境変数</b>や専用の管理サービスに置き、コード本体には書かない</li>
+  <li>${ic('.env')} ファイルに書き、${ic('.gitignore')} に登録してGitの管理対象から外す</li>
+  <li>ブラウザで動くコード(フロントエンド)にキーを置くと利用者から丸見えになるため、キーが必要な処理はサーバー側に置く</li>
+  <li>もし漏らしてしまったら、すぐにそのキーを<b>無効化して再発行</b>する(削除コミットだけでは履歴に残る)</li>
+ </ul>`,
+ quiz:[
+  {q:'APIキーの置き場所として適切なのは?', choices:['コード内の変数に直書き','環境変数や .env ファイル(.gitignore登録済み)','READMEに書いてチームで共有'], answer:1, explain:'コードやREADMEに書くと公開リポジトリから漏洩します。環境変数に置き、.envは必ず.gitignoreでGit管理から外します。'},
+  {q:'APIキーをGitHubに誤って公開してしまったら、まずやるべきことは?', choices:['そのキーを無効化して新しいキーを発行する','キーを書いた行を削除してpushし直す','リポジトリ名を変える'], answer:0, explain:'削除コミットしてもGitの履歴には残り、公開された時点で漏れたものとみなします。キー自体の無効化・再発行が最優先です。'}
+ ]},
+
+{id:'auth', cat:'セキュリティ', title:'認証と認可', desc:'「誰か」と「何ができるか」を分けて考える',
+ body:`<p>この2つは似た言葉ですが、役割が違います。</p>
+ <ul>
+  <li><b>認証(Authentication)</b> … 「この人が誰であるか」を確認すること。ログインが代表例</li>
+  <li><b>認可(Authorization)</b> … 「その人が何をする権限を持っているか」を確認すること。管理者だけが削除できる、など</li>
+ </ul>
+ <p>混同すると「ログインさえしていれば誰のデータでも見られる」ような設計ミスにつながります。よくある事故の形:</p>`
+ + cb(`// URLのIDを変えるだけで他人のデータが見える
+GET /users/123/orders  ← ログイン済みなら誰でも見られる?
+                         「この注文はこのユーザーのものか」の
+                         チェック(認可)が抜けている`)
+ + `<p>機能を作るときは常に2つの問いをセットで確認しましょう:「この人は誰?(認証)」「この人にこの操作を許していい?(認可)」</p>`,
+ quiz:[
+  {q:'「ログイン機能」が担っているのはどっち?', choices:['認証(誰であるかの確認)','認可(権限の確認)'], answer:0, explain:'ログインは本人確認、つまり認証です。ログイン後に「その操作をしていいか」を確認するのが認可で、両方が揃って初めて安全になります。'},
+  {q:'URLの /users/123 の数字を124に変えたら他人の情報が見えた。何が欠けている?', choices:['認証','認可(そのデータへのアクセス権のチェック)','暗号化'], answer:1, explain:'ログイン(認証)は済んでいても、「そのデータはあなたのものか」の確認(認可)が抜けています。IDOR(不適切な認可)と呼ばれる典型的な脆弱性です。'}
+ ]},
+
+{id:'validate', cat:'セキュリティ', title:'入力値の検証(バリデーション)', desc:'想定外の入力からアプリを守る',
+ body:`<p>ユーザーの入力は、悪意がなくても間違いだらけです。数字の欄に文字、空のまま送信、極端に長い文章…。<b>入力を検証(バリデーション)してから処理する</b>のが、安全なアプリの基本姿勢です。</p>`
+ + cb(`function validateAge(input) {
+  const age = Number(input);
+  if (Number.isNaN(age)) return "数値を入力してください";
+  if (age < 0 || age > 150) return "0〜150の範囲で入力してください";
+  return null; // 問題なし
+}`)
+ + `<p>検証の観点:</p>
+ <ul>
+  <li><b>型</b>:数値のはずが文字列になっていないか</li>
+  <li><b>範囲</b>:あり得ない値(負の年齢など)ではないか</li>
+  <li><b>必須</b>:空のままになっていないか</li>
+  <li><b>長さ</b>:極端に長い入力ではないか</li>
+ </ul>
+ <p>重要な原則:<b>画面側(フロントエンド)の検証は利便性のため、本当の守りはサーバー側で行う</b>。画面側のチェックは開発者ツールで簡単に回避できるからです。</p>`,
+ quiz:[
+  {q:'フロントエンド(画面側)だけで入力チェックをする設計の問題点は?', choices:['チェックが速すぎる','開発者ツールなどで簡単に回避でき、不正な値がサーバーに届く','見た目が悪くなる'], answer:1, explain:'画面側の検証は使い勝手向上のためのもの。本当の防御はサーバー側で行う、が原則です。'},
+  {q:'年齢入力欄のバリデーションとして適切な組み合わせは?', choices:['数値かどうか+現実的な範囲か+空でないか','文字数が10文字以内か','ひらがなかどうか'], answer:0, explain:'型・範囲・必須の3点セットが基本です。「あり得ない値が入ってきたらどうなる?」と自問する癖が、堅牢なアプリにつながります。'}
+ ]},
+
+{id:'https', cat:'セキュリティ', title:'HTTPSと通信の安全', desc:'通信は盗み見られる前提で考える',
+ body:`<p>HTTP通信は、途中の経路で内容を盗み見たり書き換えたりできてしまいます。<b>HTTPS</b>は通信を暗号化して、盗聴・改ざん・なりすましを防ぐ仕組みです。URLが ${ic('https://')} で始まっていればHTTPSです。</p>
+ <p>開発者として押さえるポイント:</p>
+ <ul>
+  <li>フォーム送信やAPI通信など、データを送る先は必ずHTTPSにする</li>
+  <li>個人情報やパスワードを ${ic('http://')} のURLに送るコードは書かない</li>
+  <li>URLの一部(クエリパラメータ)に個人情報を載せない — 履歴やログに残ってしまう</li>
+ </ul>`
+ + cb(`// 悪い例:個人情報がURLに載っている(ログや履歴に残る)
+fetch("https://api.example.com/search?email=taro@example.com");
+
+// 良い例:本文(body)に入れてPOSTで送る
+fetch("https://api.example.com/search", {
+  method: "POST",
+  body: JSON.stringify({ email: "taro@example.com" })
+});`),
+ quiz:[
+  {q:'HTTPSが防いでくれるものは?', choices:['通信途中の盗聴・改ざん','SQLインジェクション','パスワードの使い回し'], answer:0, explain:'HTTPSは「通信経路」の保護です。SQLインジェクションやXSSはアプリ側の実装の問題なので、HTTPSでは防げません。役割の切り分けが大事です。'},
+  {q:'メールアドレスなどの個人情報をAPIに送るとき、避けるべき方法は?', choices:['POSTのbodyに入れて送る','URLのクエリパラメータ(?email=…)に載せて送る'], answer:1, explain:'URLはブラウザ履歴やサーバーのアクセスログに残ります。個人情報はbodyに入れてPOSTで送るのが基本です。'}
+ ]},
+
+{id:'deps', cat:'セキュリティ', title:'ライブラリと依存関係のリスク', desc:'他人のコードを使う責任',
+ body:`<p>現代の開発では、他人が作ったライブラリ(部品)を組み合わせてアプリを作ります。便利な反面、<b>そのライブラリに脆弱性があれば自分のアプリも危険になる</b>という側面があります。</p>
+ <p>押さえておくポイント:</p>
+ <ul>
+  <li>ライブラリは「よく使われていて、更新が続いているもの」を選ぶ(GitHubのスター数や最終更新日が目安)</li>
+  <li>npmなら ${ic('npm audit')} コマンドで、使用中のライブラリに既知の脆弱性がないか確認できる</li>
+  <li>CDN(外部サーバー)からスクリプトを読み込むときは、読み込み元が信頼できるかを確認する</li>
+  <li>使っていないライブラリは削除する — 部品が少ないほど攻撃される面も小さくなる</li>
+ </ul>
+ <p>「自分の書いたコードは安全でも、借りてきた部品ごと危なくなる」という視点は、AIに生成してもらったコードを使うときにも通じます。<b>出どころのわからないコードをそのまま動かさない</b>のが基本姿勢です。</p>`,
+ quiz:[
+  {q:'npmで使用中のライブラリに既知の脆弱性がないか調べるコマンドは?', choices:['npm check','npm audit','npm secure'], answer:1, explain:'npm audit は依存ライブラリを脆弱性データベースと照合してくれます。定期的に実行する習慣をつけましょう。'},
+  {q:'ライブラリ選びで危険信号なのは?', choices:['最終更新が数年前で止まっている','GitHubのスターが多い','公式ドキュメントが充実している'], answer:0, explain:'更新が止まったライブラリは、脆弱性が見つかっても修正されません。利用者数と更新の継続性が選定の重要な目安です。'}
+ ]}
+];
+
+/* ---------- Learn UI ---------- */
+const conceptArea = document.getElementById('conceptArea');
+const categories = [...new Set(concepts.map(c=>c.cat))];
+let doneMap = {};
+
+function renderConcepts(){
+  conceptArea.innerHTML = categories.map(cat=>{
+    const cards = concepts.filter(c=>c.cat===cat).map(c=>`
+      <div class="concept-card" data-id="${c.id}">
+        <h3>${c.title}</h3>
+        <p>${c.desc}</p>
+        ${doneMap[c.id] ? '<span class="done">✓ チェック済み ('+doneMap[c.id]+')</span>' : ''}
+      </div>`).join('');
+    return `<div class="cat-heading">${cat}</div><div class="concept-grid">${cards}</div>`;
+  }).join('');
+  conceptArea.querySelectorAll('.concept-card').forEach(card=>{
+    card.addEventListener('click', ()=>openConcept(card.dataset.id));
+  });
+}
+
+const drawer = document.getElementById('learnDrawer');
+const drawerTitle = document.getElementById('drawerTitle');
+const drawerBody = document.getElementById('drawerBody');
+const quizArea = document.getElementById('quizArea');
+const quizStartBtn = document.getElementById('quizStartBtn');
+let currentConcept = null;
+
+function openConcept(id){
+  currentConcept = concepts.find(c=>c.id===id);
+  drawerTitle.textContent = currentConcept.title;
+  drawerBody.innerHTML = currentConcept.body;
+  quizArea.innerHTML = '';
+  quizStartBtn.style.display = 'inline-block';
+  drawer.classList.add('open');
+  drawer.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+quizStartBtn.addEventListener('click', ()=>{
+  if(!currentConcept) return;
+  quizStartBtn.style.display = 'none';
+  startQuiz(currentConcept);
+});
+
+function startQuiz(concept){
+  let index = 0, score = 0;
+  showQuestion();
+
+  function showQuestion(){
+    const q = concept.quiz[index];
+    quizArea.innerHTML = `
+      <div class="quiz-progress">Q${index+1} / ${concept.quiz.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      ${q.choices.map((c,i)=>`<button class="choice" data-i="${i}">${escapeHtml(c)}</button>`).join('')}
+      <div class="quiz-explain" id="quizExplain"></div>
+      <div id="quizNext"></div>`;
+    quizArea.querySelectorAll('.choice').forEach(btn=>{
+      btn.addEventListener('click', ()=>select(+btn.dataset.i));
+    });
+  }
+
+  function select(i){
+    const q = concept.quiz[index];
+    const buttons = quizArea.querySelectorAll('.choice');
+    buttons.forEach(b=>b.disabled = true);
+    buttons[q.answer].classList.add('correct');
+    if(i === q.answer){
+      score++;
+    } else {
+      buttons[i].classList.add('wrong');
+    }
+    document.getElementById('quizExplain').innerHTML =
+      `<div class="annotation ${i===q.answer?'ok':'warn'}">
+        <span class="tag">${i===q.answer?'正解':'おしい'}</span>
+        <div class="body">${q.explain}</div>
+      </div>`;
+    const nextArea = document.getElementById('quizNext');
+    if(index < concept.quiz.length - 1){
+      nextArea.innerHTML = '<button class="action" id="nextBtn">次の問題へ</button>';
+      document.getElementById('nextBtn').addEventListener('click', ()=>{ index++; showQuestion(); });
+    } else {
+      nextArea.innerHTML = `
+        <div class="quiz-score">結果: ${score} / ${concept.quiz.length} 問正解</div>
+        <button class="action" id="retryBtn">もう一度</button>`;
+      document.getElementById('retryBtn').addEventListener('click', ()=>{ index=0; score=0; showQuestion(); });
+      saveDone(concept.id, score + '/' + concept.quiz.length);
+    }
+  }
+}
+
+async function saveDone(id, result){
+  doneMap[id] = result;
+  renderConcepts();
+  try{ await window.storage.set('learn_done', JSON.stringify(doneMap)); }catch(e){}
+}
+async function loadDone(){
+  try{
+    const r = await window.storage.get('learn_done');
+    if(r && r.value) doneMap = JSON.parse(r.value);
+  }catch(e){ doneMap = {}; }
+  renderConcepts();
+}
+loadDone();
+
+/* ================= READ ================= */
+document.getElementById('readBtn').addEventListener('click', async ()=>{
+  const code = document.getElementById('readCode').value.trim();
+  const resultBox = document.getElementById('readResult');
+  if(!code){ resultBox.innerHTML = '<div class="error-box">コードを貼り付けてください。</div>'; return; }
+  resultBox.innerHTML = '<div class="loading">読んでいます…</div>';
+  try{
+    const system = "あなたは初学者にコードをやさしく解説する講師です。JSON以外のテキストは一切出力しないでください。専門用語には簡単な補足をつけてください。コードを引用するときはバッククォートで囲んでください。";
+    const userText = `次のコードを読んで解説してください。
+コード:
+\`\`\`
+${code}
+\`\`\`
+出力は次のJSON形式のみ:
+{"summary":"全体で何をしているコードかの一言まとめ", "annotations":[{"target":"該当箇所の短い引用(コードの一部)", "explanation":"その部分の説明"}], "keywords":["出てきた重要な用語","..."]}
+annotationsは意味のまとまりごとに3〜6個程度にしてください。`;
+    const raw = await callClaude(system, userText);
+    const data = parseJSON(raw);
+    renderReadResult(data);
+    const list = await saveHistory('read_history', {label: code.slice(0,40).replace(/\n/g,' ')+'…', data});
+    if(list) renderHistory(document.getElementById('readHistory'), list, (item)=>renderReadResult(item.data));
+  }catch(e){
+    resultBox.innerHTML = '<div class="error-box">解説の生成に失敗しました。もう一度お試しください。</div>';
+  }
+});
+function renderReadResult(data){
+  const resultBox = document.getElementById('readResult');
+  let html = `<div class="summary-card">${formatAiText(data.summary)}</div>`;
+  html += data.annotations.map(a=>`
+    <div class="annotation">
+      <span class="tag">ここ</span>
+      <div class="body"><pre class="codeblock">${escapeHtml(a.target)}</pre>${formatAiText(a.explanation)}</div>
+    </div>`).join('');
+  if(data.keywords && data.keywords.length){
+    html += `<div class="chip-row">${data.keywords.map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('')}</div>`;
+  }
+  resultBox.innerHTML = html;
+}
+
+/* ================= DEBUG ================= */
+document.getElementById('debugBtn').addEventListener('click', async ()=>{
+  const code = document.getElementById('debugCode').value.trim();
+  const err = document.getElementById('debugError').value.trim();
+  const resultBox = document.getElementById('debugResult');
+  if(!code){ resultBox.innerHTML = '<div class="error-box">コードを貼り付けてください。</div>'; return; }
+  resultBox.innerHTML = '<div class="loading">原因を調べています…</div>';
+  try{
+    const system = "あなたは経験豊富なデバッグの相棒です。JSON以外のテキストは一切出力しないでください。初学者にもわかる言葉で説明してください。コードを引用するときはバッククォートで囲んでください。";
+    const userText = `次のコードで問題が起きています。原因を推測して助けてください。
+コード:
+\`\`\`
+${code}
+\`\`\`
+エラー・症状: ${err || "(特に記載なし。コードを見て怪しい点を指摘してください)"}
+出力は次のJSON形式のみ:
+{"likely_cause":"考えられる原因", "explanation":"なぜそうなるかの仕組みの説明", "fix":"具体的な直し方(修正例のコードを含む)", "prevention":"次から同じミスを防ぐコツ"}`;
+    const raw = await callClaude(system, userText);
+    const data = parseJSON(raw);
+    renderDebugResult(data);
+    const list = await saveHistory('debug_history', {label: (err||code).slice(0,40).replace(/\n/g,' ')+'…', data});
+    if(list) renderHistory(document.getElementById('debugHistory'), list, (item)=>renderDebugResult(item.data));
+  }catch(e){
+    resultBox.innerHTML = '<div class="error-box">分析に失敗しました。もう一度お試しください。</div>';
+  }
+});
+function renderDebugResult(data){
+  document.getElementById('debugResult').innerHTML = `
+    <div class="annotation warn"><span class="tag">原因(仮説)</span><div class="body">${formatAiText(data.likely_cause)}</div></div>
+    <div class="annotation"><span class="tag">なぜ起きる?</span><div class="body">${formatAiText(data.explanation)}</div></div>
+    <div class="annotation ok"><span class="tag">直し方</span><div class="body">${formatAiText(data.fix)}</div></div>
+    <div class="annotation"><span class="tag">再発防止</span><div class="body">${formatAiText(data.prevention)}</div></div>`;
+}
+
+/* ================= SECURITY ================= */
+document.getElementById('secBtn').addEventListener('click', async ()=>{
+  const code = document.getElementById('secCode').value.trim();
+  const resultBox = document.getElementById('secResult');
+  if(!code){ resultBox.innerHTML = '<div class="error-box">コードを貼り付けてください。</div>'; return; }
+  resultBox.innerHTML = '<div class="loading">チェックしています…</div>';
+  try{
+    const system = "あなたはアプリのセキュリティレビューを行う講師です。JSON以外のテキストは一切出力しないでください。攻撃コードの作成は行わず、防御目的の指摘のみ行ってください。コードを引用するときはバッククォートで囲んでください。";
+    const userText = `次のコードにセキュリティ上の懸念点がないか確認してください。
+コード:
+\`\`\`
+${code}
+\`\`\`
+出力は次のJSON形式のみ:
+{"risk_level":"低 または 中 または 高", "issues":[{"issue":"問題の種類(例: XSSの可能性)", "why":"なぜ危険か", "fix":"具体的な対策(修正例のコードを含む)"}], "good_points":["すでにできている良い点があれば"]}
+問題が見つからなければissuesは空配列にしてください。`;
+    const raw = await callClaude(system, userText);
+    const data = parseJSON(raw);
+    renderSecResult(data);
+    const list = await saveHistory('sec_history', {label: 'リスク:'+data.risk_level+' / '+code.slice(0,30).replace(/\n/g,' ')+'…', data});
+    if(list) renderHistory(document.getElementById('secHistory'), list, (item)=>renderSecResult(item.data));
+  }catch(e){
+    resultBox.innerHTML = '<div class="error-box">チェックに失敗しました。もう一度お試しください。</div>';
+  }
+});
+function renderSecResult(data){
+  const resultBox = document.getElementById('secResult');
+  let html = `<div class="summary-card">リスクレベル: <b>${escapeHtml(data.risk_level)}</b></div>`;
+  if(data.issues && data.issues.length){
+    html += data.issues.map(i=>`
+      <div class="annotation warn">
+        <span class="tag">${escapeHtml(i.issue)}</span>
+        <div class="body"><b>なぜ危険か:</b> ${formatAiText(i.why)}<br><b>対策:</b> ${formatAiText(i.fix)}</div>
+      </div>`).join('');
+  } else {
+    html += `<div class="annotation ok"><span class="tag">OK</span><div class="body">明確な懸念点は見つかりませんでした。</div></div>`;
+  }
+  if(data.good_points && data.good_points.length){
+    html += `<div class="chip-row">${data.good_points.map(g=>`<span class="chip">👍 ${escapeHtml(g)}</span>`).join('')}</div>`;
+  }
+  resultBox.innerHTML = html;
+}
+
+/* ---------- Load histories ---------- */
+(async ()=>{
+  const rh = await loadHistory('read_history');
+  renderHistory(document.getElementById('readHistory'), rh, (item)=>renderReadResult(item.data));
+  const dh = await loadHistory('debug_history');
+  renderHistory(document.getElementById('debugHistory'), dh, (item)=>renderDebugResult(item.data));
+  const sh = await loadHistory('sec_history');
+  renderHistory(document.getElementById('secHistory'), sh, (item)=>renderSecResult(item.data));
+})();
+</script>
+</body>
+</html>
