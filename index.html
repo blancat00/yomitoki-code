@@ -243,6 +243,15 @@
     padding:16px 18px;margin:10px 0;
   }
   .resource h4{margin:0 0 4px;font-size:15px;font-family:'Shippori Mincho', serif;}
+  .resource h4 a{
+    color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);
+    padding-bottom:1px;transition:.15s;
+  }
+  .resource h4 a:hover{color:var(--rust);border-bottom-color:var(--rust);}
+  .resource h4 a::after{
+    content:'↗';font-family:'Zen Kaku Gothic New', sans-serif;font-size:11px;
+    margin-left:4px;color:var(--ink-soft);
+  }
   .resource p{margin:6px 0 0;font-size:13px;color:var(--ink-soft);}
   .badge-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
   .badge{
@@ -370,22 +379,22 @@
       <h3>☕ すきま時間に(〜15分)</h3>
       <div class="col-lead">通勤中や子どもの昼寝タイムなど、短い時間でサッと読める・見られるもの。</div>
       <div class="resource">
-        <h4>ドットインストール</h4>
+        <h4><a href="https://dotinstall.com/" target="_blank" rel="noopener">ドットインストール</a></h4>
         <p>1本3分の動画でプログラミングを学べる日本のサービス。JavaScript基礎の講座から始めるのがおすすめ。1本だけ見る、が続けやすい。</p>
         <div class="badge-row"><span class="badge time">1本 約3分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
       </div>
       <div class="resource">
-        <h4>MDN Web Docs</h4>
+        <h4><a href="https://developer.mozilla.org/ja/" target="_blank" rel="noopener">MDN Web Docs</a></h4>
         <p>Mozillaが運営するWeb技術の公式リファレンス。「読む」タブで出てきた用語を調べる辞書として使うのが◎。1記事5〜15分。</p>
         <div class="badge-row"><span class="badge time">1記事 5〜15分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜上級</span></div>
       </div>
       <div class="resource">
-        <h4>JavaScript.info(日本語版)</h4>
+        <h4><a href="https://ja.javascript.info/" target="_blank" rel="noopener">JavaScript.info(日本語版)</a></h4>
         <p>JavaScriptを体系的に、丁寧に解説した教科書サイト。1章10〜20分。ロードマップのSTEP1〜3の内容がほぼカバーされている。</p>
         <div class="badge-row"><span class="badge time">1章 10〜20分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
       </div>
       <div class="resource">
-        <h4>Zenn / Qiita</h4>
+        <h4><a href="https://zenn.dev/" target="_blank" rel="noopener">Zenn</a> / <a href="https://qiita.com/" target="_blank" rel="noopener">Qiita</a></h4>
         <p>日本のエンジニアによる技術記事サイト。「fetch API 使い方」など具体的な悩みで検索すると実例つきの記事が見つかる。1記事5〜10分。</p>
         <div class="badge-row"><span class="badge time">1記事 5〜10分</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜上級</span></div>
       </div>
@@ -395,27 +404,27 @@
       <h3>📚 まとまった時間に(1時間〜)</h3>
       <div class="col-lead">休日など、腰を据えて学べるときに。理解が一段深まるものを揃えました。</div>
       <div class="resource">
-        <h4>CS50(ハーバード大学)</h4>
+        <h4><a href="https://cs50.harvard.edu/x/" target="_blank" rel="noopener">CS50(ハーバード大学)</a></h4>
         <p>ハーバード大学が無料公開しているコンピュータサイエンス入門講義。YouTubeで全講義が見られる。メモリやデータ構造など「コードの裏側で何が起きているか」の理解が深まる。英語だが日本語字幕あり、有志の日本語翻訳サイト(cs50.jp)も存在する。</p>
         <div class="badge-row"><span class="badge time">1講義 90〜120分</span><span class="badge lang">英語(日本語字幕あり)</span><span class="badge lvl">初級〜中級</span></div>
       </div>
       <div class="resource">
-        <h4>Progate</h4>
+        <h4><a href="https://prog-8.com/" target="_blank" rel="noopener">Progate</a></h4>
         <p>ブラウザ上で手を動かしながら学べる日本のサービス。環境構築不要でスライド+演習形式。基礎の復習・穴埋めに最適。無料枠あり。</p>
         <div class="badge-row"><span class="badge time">1レッスン 30〜60分</span><span class="badge lang">日本語</span><span class="badge lvl">初級</span></div>
       </div>
       <div class="resource">
-        <h4>freeCodeCamp</h4>
+        <h4><a href="https://www.freecodecamp.org/" target="_blank" rel="noopener">freeCodeCamp</a></h4>
         <p>無料で演習中心に学べる海外の定番サービス。JavaScriptアルゴリズムのコースは実力がつくと評判。YouTubeチャンネルの長編チュートリアルも豊富。</p>
         <div class="badge-row"><span class="badge time">1セクション 1〜3時間</span><span class="badge lang">英語</span><span class="badge lvl">初級〜中級</span></div>
       </div>
       <div class="resource">
-        <h4>roadmap.sh</h4>
+        <h4><a href="https://roadmap.sh/" target="_blank" rel="noopener">roadmap.sh</a></h4>
         <p>エンジニアの学習ロードマップ集。「Frontend」「JavaScript」「AI Engineer」「Backend」を眺めて、自分の現在地と次に学ぶことを確認するのに使う。地図として月1回見返すのがおすすめ。</p>
         <div class="badge-row"><span class="badge time">眺めるだけなら15分</span><span class="badge lang">英語</span><span class="badge lvl">全レベル</span></div>
       </div>
       <div class="resource">
-        <h4>IPA「安全なウェブサイトの作り方」</h4>
+        <h4><a href="https://www.ipa.go.jp/security/vuln/websecurity.html" target="_blank" rel="noopener">IPA「安全なウェブサイトの作り方」</a></h4>
         <p>情報処理推進機構(IPA)が無料公開しているセキュリティの定番資料。XSSやSQLインジェクションなど主要な脆弱性と対策が日本語でまとまっている。「守る」タブの内容を深掘りしたいときに。</p>
         <div class="badge-row"><span class="badge time">通読 2〜3時間</span><span class="badge lang">日本語</span><span class="badge lvl">初級〜中級</span></div>
       </div>
