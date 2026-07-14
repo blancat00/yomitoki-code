@@ -278,6 +278,51 @@
 
   footer.note{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:30px;}
 
+  /* read: カメラOCR */
+  .cam-wrap{
+    position:relative;width:100%;aspect-ratio:3/4;max-height:70vh;
+    background:#272C38;border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;margin-top:4px;
+  }
+  .cam-wrap video, .cam-wrap canvas{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;
+  }
+  .cam-wrap canvas{object-fit:contain;} /* 撮影結果は全体を見せる(切り取らない) */
+  .cam-wrap.live video{display:block;}
+  .cam-wrap.shot canvas{display:block;}
+  .cam-hint{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:24px;color:var(--paper);font-size:13px;line-height:1.8;
+  }
+  .cam-wrap.live .cam-hint, .cam-wrap.shot .cam-hint{display:none;}
+  #camAnno{position:absolute;inset:0;pointer-events:none;}
+  #camAnno .anno-underline{
+    position:absolute;border-bottom:2.5px solid var(--amber);
+    background:rgba(176,126,35,.14);pointer-events:auto;cursor:pointer;border-radius:2px;
+  }
+  #camAnno .anno-underline.active{border-bottom-color:var(--rust);background:rgba(166,61,47,.18);}
+  #camAnno .anno-stick{position:absolute;width:2px;background:var(--rust);pointer-events:none;}
+  #camAnno .anno-callout{
+    position:absolute;background:var(--card);border:1px solid var(--ink);
+    border-radius:var(--radius);padding:9px 12px;font-size:12.5px;line-height:1.6;
+    color:var(--ink);box-shadow:0 6px 18px rgba(32,41,58,.30);pointer-events:auto;
+  }
+  #camAnno .anno-callout .g-term{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:12px;}
+  #camAnno .anno-callout .g-cat{
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:100px;padding:1px 7px;margin-left:6px;
+  }
+  #camAnno .anno-callout .g-desc{display:block;margin-top:3px;}
+  .cam-controls{display:flex;gap:8px;flex-wrap:wrap;}
+  .cam-controls .action{margin-top:14px;}
+  .cam-status{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);margin-top:12px;min-height:18px;}
+  .cam-terms{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .cam-terms .cam-chip{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;background:var(--paper);
+    border:1px solid var(--line);padding:4px 11px;border-radius:100px;color:var(--ink);cursor:pointer;
+  }
+  .cam-terms .cam-chip:hover{border-color:var(--ink);}
+
   /* glossary hover tooltip */
   #glossaryTip{
     position:fixed;z-index:9999;max-width:340px;display:none;pointer-events:none;
@@ -335,15 +380,23 @@
     </div>
   </section>
 
-  <!-- READ -->
+  <!-- READ (カメラ + OCR ・ AIなし) -->
   <section class="panel" id="panel-read" style="display:none;">
-    <h2>読む ― コードに注釈をつける</h2>
-    <div class="lead">読めないコードを貼り付けると、意味のまとまりごとに注釈をつけて解説します。</div>
-    <label class="field-label">コード</label>
-    <textarea id="readCode" placeholder="ここにコードを貼り付け…"></textarea>
-    <button class="action" id="readBtn">解説してもらう</button>
-    <div class="result-wrap" id="readResult"></div>
-    <div class="history-row" id="readHistory"></div>
+    <h2>読む ― カメラで用語をよみとく</h2>
+    <div class="lead">カメラをコードにかざして撮ると、用語マスタ(glossary.js)に載っている単語に下線を引いて解説します。AIは使わないので出先でも軽快に動きます(文字認識エンジンは初回だけ読み込みに通信が必要)。</div>
+    <div class="cam-wrap" id="camWrap">
+      <video id="camVideo" playsinline muted></video>
+      <canvas id="camCanvas"></canvas>
+      <div id="camAnno"></div>
+      <div class="cam-hint" id="camHint">「カメラを起動」を押して、読みたいコードにかざしてな<br>(画面・本・紙、どれでもOK)</div>
+    </div>
+    <div class="cam-controls">
+      <button class="action" id="camStartBtn">カメラを起動</button>
+      <button class="action" id="camShotBtn" style="display:none;">撮ってよみとく</button>
+      <button class="action" id="camRetakeBtn" style="display:none;">とり直す</button>
+    </div>
+    <div class="cam-status" id="camStatus"></div>
+    <div class="cam-terms" id="camTerms"></div>
   </section>
 
   <!-- DEBUG -->
@@ -431,7 +484,7 @@
     </div>
   </section>
 
-  <footer class="note">Claude in Claude で動作 ・ 追加のAPI課金なし ・ 学ぶ/コラムはAIなしでも利用可<br>コード内の単語にカーソルをのせると用語解説が表示されます(glossary.js読み込み時)</footer>
+  <footer class="note">直す/守るはClaude in Claudeで動作(追加のAPI課金なし) ・ 読む/学ぶ/コラムはAIなしで動作<br>コード内の単語にカーソルをのせる、またはカメラでかざすと用語解説が表示されます(glossary.js読み込み時)</footer>
 </div>
 
 <script src="glossary.js"></script>
@@ -1053,44 +1106,222 @@ async function loadDone(){
 }
 loadDone();
 
-/* ================= READ ================= */
-document.getElementById('readBtn').addEventListener('click', async ()=>{
-  const code = document.getElementById('readCode').value.trim();
-  const resultBox = document.getElementById('readResult');
-  if(!code){ resultBox.innerHTML = '<div class="error-box">コードを貼り付けてください。</div>'; return; }
-  resultBox.innerHTML = '<div class="loading">読んでいます…</div>';
-  try{
-    const system = "あなたは初学者にコードをやさしく解説する講師です。JSON以外のテキストは一切出力しないでください。専門用語には簡単な補足をつけてください。コードを引用するときはバッククォートで囲んでください。";
-    const userText = `次のコードを読んで解説してください。
-コード:
-\`\`\`
-${code}
-\`\`\`
-出力は次のJSON形式のみ:
-{"summary":"全体で何をしているコードかの一言まとめ", "annotations":[{"target":"該当箇所の短い引用(コードの一部)", "explanation":"その部分の説明"}], "keywords":["出てきた重要な用語","..."]}
-annotationsは意味のまとまりごとに3〜6個程度にしてください。`;
-    const raw = await callClaude(system, userText);
-    const data = parseJSON(raw);
-    renderReadResult(data);
-    const list = await saveHistory('read_history', {label: code.slice(0,40).replace(/\n/g,' ')+'…', data});
-    if(list) renderHistory(document.getElementById('readHistory'), list, (item)=>renderReadResult(item.data));
-  }catch(e){
-    resultBox.innerHTML = '<div class="error-box">解説の生成に失敗しました。もう一度お試しください。</div>';
+/* ================= READ: カメラで用語をよみとく (AIなし) =================
+   カメラ映像を静止画キャプチャ → 端末内でOCR(Tesseract.js) →
+   読み取った単語を用語マスタ(glossary.js)と照合 →
+   該当語に下線、タップで下線から棒を伸ばして解説を表示する。
+   Claude/AIは一切使わないので、出先でも軽快に動く。 */
+(function(){
+  const dict = window.YOMITOKI_GLOSSARY || {};
+  const wrap = document.getElementById('camWrap');
+  const video = document.getElementById('camVideo');
+  const canvas = document.getElementById('camCanvas');
+  const anno = document.getElementById('camAnno');
+  const statusEl = document.getElementById('camStatus');
+  const termsEl = document.getElementById('camTerms');
+  const startBtn = document.getElementById('camStartBtn');
+  const shotBtn = document.getElementById('camShotBtn');
+  const retakeBtn = document.getElementById('camRetakeBtn');
+  if(!wrap) return;
+
+  let stream = null;
+  let found = [];      // {term, entry, bbox:{x0,y0,x1,y1}}
+  let activeIdx = -1;
+
+  function setStatus(msg){ statusEl.textContent = msg || ''; }
+
+  /* Tesseract.jsは重いので、カメラを使うときに初回だけCDNから読み込む */
+  let tessLoading = null;
+  function loadTesseract(){
+    if(window.Tesseract) return Promise.resolve();
+    if(tessLoading) return tessLoading;
+    tessLoading = new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      s.onload = resolve;
+      s.onerror = ()=>{ tessLoading = null; reject(new Error('文字認識エンジンの読み込みに失敗しました。通信環境を確認してな')); };
+      document.head.appendChild(s);
+    });
+    return tessLoading;
   }
-});
-function renderReadResult(data){
-  const resultBox = document.getElementById('readResult');
-  let html = `<div class="summary-card">${formatAiText(data.summary)}</div>`;
-  html += data.annotations.map(a=>`
-    <div class="annotation">
-      <span class="tag">ここ</span>
-      <div class="body"><pre class="codeblock">${escapeHtml(a.target)}</pre>${formatAiText(a.explanation)}</div>
-    </div>`).join('');
-  if(data.keywords && data.keywords.length){
-    html += `<div class="chip-row">${data.keywords.map(k=>`<span class="chip">${escapeHtml(k)}</span>`).join('')}</div>`;
+
+  async function startCamera(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      setStatus('この環境ではカメラが使えません(HTTPSのブラウザで開いてな)'); return;
+    }
+    setStatus('カメラを起動中…');
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } }, audio: false
+      });
+    }catch(e){
+      setStatus('カメラを使えませんでした。ブラウザのカメラ許可を確認してな'); return;
+    }
+    video.srcObject = stream;
+    await video.play().catch(()=>{});
+    wrap.classList.remove('shot'); wrap.classList.add('live');
+    clearAnno();
+    startBtn.style.display = 'none';
+    shotBtn.style.display = 'inline-block';
+    retakeBtn.style.display = 'none';
+    setStatus('コードにかざして「撮ってよみとく」を押してな');
   }
-  resultBox.innerHTML = html;
-}
+
+  function stopCamera(){
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+    video.srcObject = null;
+  }
+
+  async function capture(){
+    if(!video.videoWidth){ setStatus('まだ映像が準備中や。少し待ってな'); return; }
+    // フレームをcanvasへ。OCR精度と速度のバランスで最大幅1080pxに抑える
+    const scale = Math.min(1, 1080 / video.videoWidth);
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    wrap.classList.remove('live'); wrap.classList.add('shot');
+    stopCamera();
+    shotBtn.style.display = 'none';
+    retakeBtn.style.display = 'inline-block';
+    clearAnno();
+    setStatus('よみとり中…(初回はエンジン読み込みに少し時間がかかります)');
+    try{
+      await loadTesseract();
+      const { data } = await Tesseract.recognize(canvas, 'eng', {
+        logger: m => {
+          if(m.status === 'recognizing text') setStatus('よみとり中… ' + Math.round(m.progress*100) + '%');
+        }
+      });
+      annotate(extractWords(data));
+    }catch(e){
+      setStatus((e && e.message) ? e.message : 'よみとりに失敗しました。もう一度試してな');
+    }
+  }
+
+  /* Tesseract v4/v5どちらの返り値からも単語(bbox付き)を取り出す */
+  function extractWords(data){
+    if(data && Array.isArray(data.words) && data.words.length) return data.words;
+    const out = [];
+    ((data && data.blocks) || []).forEach(b =>
+      (b.paragraphs||[]).forEach(p =>
+        (p.lines||[]).forEach(l =>
+          (l.words||[]).forEach(w => out.push(w)))));
+    return out;
+  }
+
+  /* OCRした単語をマスタと照合。OCRは fetch(url); のように記号を単語に
+     くっつけて返すことが多いので、複合キー→ドット隣接→内部の識別子、の順で緩く探す。 */
+  function lookup(raw){
+    if(!raw) return null;
+    const cands = [];
+    // 前後の記号だけ落とした全体（border-radius など記号を含む複合キー用）
+    const trimmed = raw.replace(/^[^A-Za-z0-9_$.-]+|[^A-Za-z0-9_$.-]+$/g, '').replace(/[.-]+$/, '');
+    if(trimmed) cands.push(trimmed);
+    // トークン内の識別子を抽出（fetch(url) → fetch, url）
+    const ids = raw.match(/[A-Za-z_$][A-Za-z0-9_$]*/g) || [];
+    // ドット隣接ペア（console.log, JSON.parse など）
+    for(let i = 0; i < ids.length - 1; i++) cands.push(ids[i] + '.' + ids[i+1]);
+    ids.forEach(id => cands.push(id));
+    for(const c of cands){
+      if(Object.prototype.hasOwnProperty.call(dict, c)) return {term:c, entry:dict[c]};
+      const l = c.toLowerCase();
+      if(l !== c && Object.prototype.hasOwnProperty.call(dict, l)) return {term:l, entry:dict[l]};
+    }
+    return null;
+  }
+
+  function annotate(words){
+    found = [];
+    const seen = new Set();
+    for(const w of (words||[])){
+      const hit = lookup(w.text);
+      if(hit && w.bbox){ found.push({ term: hit.term, entry: hit.entry, bbox: w.bbox }); seen.add(hit.term); }
+    }
+    activeIdx = -1;
+    positionAnno();
+    renderTerms([...seen]);
+    if(found.length === 0){
+      setStatus('マスタに載っている単語は見つからんかった。もう少し寄って、明るいところで撮ってみてな');
+    }else{
+      setStatus(found.length + '個の用語が見つかった。下線をタップで解説が出るで');
+    }
+  }
+
+  /* bboxはcanvasのピクセル座標。object-fit:contain(全体表示)のスケールに合わせて重ねる */
+  function positionAnno(){
+    anno.innerHTML = '';
+    if(!found.length || !canvas.width) return;
+    const dispW = wrap.clientWidth, dispH = wrap.clientHeight;
+    const s = Math.min(dispW / canvas.width, dispH / canvas.height);
+    const offX = (dispW - canvas.width * s) / 2;
+    const offY = (dispH - canvas.height * s) / 2;
+    found.forEach((f, i)=>{
+      const b = f.bbox;
+      const u = document.createElement('div');
+      u.className = 'anno-underline' + (i === activeIdx ? ' active' : '');
+      u.style.left = (offX + b.x0 * s) + 'px';
+      u.style.top = (offY + b.y0 * s) + 'px';
+      u.style.width = ((b.x1 - b.x0) * s) + 'px';
+      u.style.height = ((b.y1 - b.y0) * s) + 'px';
+      u.addEventListener('click', ()=> toggle(i));
+      anno.appendChild(u);
+    });
+    if(activeIdx >= 0) drawCallout(activeIdx, s, offX, offY);
+  }
+
+  function drawCallout(i, s, offX, offY){
+    const b = found[i].bbox, entry = found[i].entry, term = found[i].term;
+    const dispW = wrap.clientWidth, dispH = wrap.clientHeight;
+    const midX = offX + (b.x0 + b.x1)/2 * s;
+    const uTop = offY + b.y0 * s, uBottom = offY + b.y1 * s;
+    const boxW = Math.min(220, dispW - 12), gap = 16;
+    const below = uBottom + gap + 72 < dispH; // 下に置く余地があるか
+
+    const stick = document.createElement('div');
+    stick.className = 'anno-stick';
+    stick.style.left = midX + 'px';
+    stick.style.height = gap + 'px';
+    stick.style.top = (below ? uBottom : (uTop - gap)) + 'px';
+
+    const box = document.createElement('div');
+    box.className = 'anno-callout';
+    box.style.width = boxW + 'px';
+    box.style.left = Math.max(6, Math.min(midX - boxW/2, dispW - boxW - 6)) + 'px';
+    box.innerHTML = '<span class="g-term">' + escapeHtml(term) + '</span>' +
+      (entry.cat ? '<span class="g-cat">' + escapeHtml(entry.cat) + '</span>' : '') +
+      '<span class="g-desc">' + escapeHtml(entry.desc) + '</span>';
+    if(below){ box.style.top = (uBottom + gap) + 'px'; }
+    else{ box.style.top = (uTop - gap) + 'px'; box.style.transform = 'translateY(-100%)'; }
+
+    anno.appendChild(stick);
+    anno.appendChild(box);
+  }
+
+  function toggle(i){ activeIdx = (activeIdx === i) ? -1 : i; positionAnno(); }
+
+  function renderTerms(terms){
+    if(!terms.length){ termsEl.innerHTML = ''; return; }
+    termsEl.innerHTML = terms.map(t => '<span class="cam-chip">' + escapeHtml(t) + '</span>').join('');
+    const chips = termsEl.querySelectorAll('.cam-chip');
+    chips.forEach((chip, ci)=>{
+      chip.addEventListener('click', ()=>{
+        const idx = found.findIndex(f => f.term === terms[ci]);
+        if(idx >= 0) toggle(idx);
+      });
+    });
+  }
+
+  function clearAnno(){ anno.innerHTML = ''; found = []; activeIdx = -1; termsEl.innerHTML = ''; }
+
+  startBtn.addEventListener('click', startCamera);
+  shotBtn.addEventListener('click', capture);
+  retakeBtn.addEventListener('click', startCamera);
+  window.addEventListener('resize', ()=>{ if(wrap.classList.contains('shot')) positionAnno(); });
+  // 別タブに移ったらカメラを止める
+  document.querySelectorAll('#tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ if(btn.dataset.tab !== 'read') stopCamera(); });
+  });
+})();
 
 /* ================= DEBUG ================= */
 document.getElementById('debugBtn').addEventListener('click', async ()=>{
@@ -1169,10 +1400,8 @@ function renderSecResult(data){
   resultBox.innerHTML = html;
 }
 
-/* ---------- Load histories ---------- */
+/* ---------- Load histories (直す・守るのみ。読むはカメラ方式で履歴なし) ---------- */
 (async ()=>{
-  const rh = await loadHistory('read_history');
-  renderHistory(document.getElementById('readHistory'), rh, (item)=>renderReadResult(item.data));
   const dh = await loadHistory('debug_history');
   renderHistory(document.getElementById('debugHistory'), dh, (item)=>renderDebugResult(item.data));
   const sh = await loadHistory('sec_history');
