@@ -383,12 +383,12 @@
   <!-- READ (カメラ + OCR ・ AIなし) -->
   <section class="panel" id="panel-read" style="display:none;">
     <h2>読む ― カメラで用語をよみとく</h2>
-    <div class="lead">カメラをコードにかざして撮ると、用語マスタ(glossary.js)に載っている単語に下線を引いて解説します。AIは使わないので出先でも軽快に動きます(文字認識エンジンは初回だけ読み込みに通信が必要)。</div>
+    <div class="lead">カメラをコードにかざすと、用語マスタ(glossary.js)に載っている単語をリアルタイムで見つけて下線を引きます。下線をタップで解説。「撮ってよみとく」で画面を固定してじっくり読めます。AIは使わないので出先でも軽快(文字認識エンジンは初回だけ読み込みに通信が必要)。</div>
     <div class="cam-wrap" id="camWrap">
       <video id="camVideo" playsinline muted></video>
       <canvas id="camCanvas"></canvas>
       <div id="camAnno"></div>
-      <div class="cam-hint" id="camHint">「カメラを起動」を押して、読みたいコードにかざしてな<br>(画面・本・紙、どれでもOK)</div>
+      <div class="cam-hint" id="camHint">「カメラを起動」を押して、読みたいコードにかざしてな<br>映った単語にリアルタイムで下線が出るで(画面・本・紙、どれでもOK)</div>
     </div>
     <div class="cam-controls">
       <button class="action" id="camStartBtn">カメラを起動</button>
@@ -1125,12 +1125,18 @@ loadDone();
   if(!wrap) return;
 
   let stream = null;
-  let found = [];      // {term, entry, bbox:{x0,y0,x1,y1}}
+  let found = [];        // {term, entry, bbox:{x0,y0,x1,y1}}
   let activeIdx = -1;
+  let activeTerm = null; // 開いている解説の用語名(リアルタイム更新をまたいで維持)
+  let scanning = false;  // リアルタイム読み取りループ中か
+  let busy = false;      // OCR実行中か(多重実行防止)
+  let refW = 0, refH = 0; // 下線座標の基準となるOCR画像のサイズ
+  const grab = document.createElement('canvas'); // ライブOCR用オフスクリーン
 
   function setStatus(msg){ statusEl.textContent = msg || ''; }
 
-  /* Tesseract.jsは重いので、カメラを使うときに初回だけCDNから読み込む */
+  /* Tesseract.jsは重いので、カメラを使うときに初回だけCDNから読み込む。
+     ワーカーは1度作って使い回す(毎回初期化すると数秒かかるため)。 */
   let tessLoading = null;
   function loadTesseract(){
     if(window.Tesseract) return Promise.resolve();
@@ -1143,6 +1149,19 @@ loadDone();
       document.head.appendChild(s);
     });
     return tessLoading;
+  }
+  let worker = null, workerLoading = null;
+  async function getWorker(){
+    if(worker) return worker;
+    if(workerLoading) return workerLoading;
+    workerLoading = (async ()=>{
+      await loadTesseract();
+      setStatus('文字認識エンジンを準備中…(初回のみ少し時間がかかります)');
+      const w = await Tesseract.createWorker('eng');
+      worker = w;
+      return w;
+    })().catch(e=>{ workerLoading = null; throw e; });
+    return workerLoading;
   }
 
   async function startCamera(){
@@ -1164,16 +1183,47 @@ loadDone();
     startBtn.style.display = 'none';
     shotBtn.style.display = 'inline-block';
     retakeBtn.style.display = 'none';
-    setStatus('コードにかざして「撮ってよみとく」を押してな');
+    setStatus('コードにかざしてな。リアルタイムでよみとくで');
+    scanning = true;
+    scanLoop();
   }
 
   function stopCamera(){
+    scanning = false;
     if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
     video.srcObject = null;
   }
 
+  /* ---- リアルタイム読み取りループ ----
+     ライブ映像からフレームを取り出してOCR→下線更新、を繰り返す。
+     前の認識が終わってから次を回すので端末が重くならない。 */
+  async function scanFrame(){
+    if(busy || !video.videoWidth) return;
+    busy = true;
+    try{
+      const scale = Math.min(1, 900 / video.videoWidth);
+      grab.width = Math.round(video.videoWidth * scale);
+      grab.height = Math.round(video.videoHeight * scale);
+      grab.getContext('2d').drawImage(video, 0, 0, grab.width, grab.height);
+      const w = await getWorker();
+      const { data } = await w.recognize(grab);
+      if(scanning) annotate(extractWords(data), grab, true);
+    }catch(e){
+      if(scanning){ setStatus((e && e.message) || 'よみとりに失敗しました'); scanning = false; }
+    }
+    busy = false;
+  }
+  async function scanLoop(){
+    while(scanning){
+      await scanFrame();
+      await new Promise(r=>setTimeout(r, 300));
+    }
+  }
+
+  /* 「撮ってよみとく」= 画面を固定してじっくり読むモード */
   async function capture(){
     if(!video.videoWidth){ setStatus('まだ映像が準備中や。少し待ってな'); return; }
+    scanning = false; // リアルタイムループを止める
     // フレームをcanvasへ。OCR精度と速度のバランスで最大幅1080pxに抑える
     const scale = Math.min(1, 1080 / video.videoWidth);
     canvas.width = Math.round(video.videoWidth * scale);
@@ -1184,15 +1234,12 @@ loadDone();
     shotBtn.style.display = 'none';
     retakeBtn.style.display = 'inline-block';
     clearAnno();
-    setStatus('よみとり中…(初回はエンジン読み込みに少し時間がかかります)');
+    setStatus('よみとり中…');
     try{
-      await loadTesseract();
-      const { data } = await Tesseract.recognize(canvas, 'eng', {
-        logger: m => {
-          if(m.status === 'recognizing text') setStatus('よみとり中… ' + Math.round(m.progress*100) + '%');
-        }
-      });
-      annotate(extractWords(data));
+      while(busy) await new Promise(r=>setTimeout(r, 100)); // ライブ側のOCR完了を待つ
+      const w = await getWorker();
+      const { data } = await w.recognize(canvas);
+      annotate(extractWords(data), canvas, false);
     }catch(e){
       setStatus((e && e.message) ? e.message : 'よみとりに失敗しました。もう一度試してな');
     }
@@ -1230,31 +1277,36 @@ loadDone();
     return null;
   }
 
-  function annotate(words){
+  function annotate(words, src, live){
+    refW = src.width; refH = src.height;
     found = [];
     const seen = new Set();
     for(const w of (words||[])){
       const hit = lookup(w.text);
       if(hit && w.bbox){ found.push({ term: hit.term, entry: hit.entry, bbox: w.bbox }); seen.add(hit.term); }
     }
-    activeIdx = -1;
+    // 開いていた解説は、リアルタイム更新後も同じ用語で維持する
+    activeIdx = activeTerm ? found.findIndex(f => f.term === activeTerm) : -1;
     positionAnno();
     renderTerms([...seen]);
     if(found.length === 0){
-      setStatus('マスタに載っている単語は見つからんかった。もう少し寄って、明るいところで撮ってみてな');
+      setStatus(live ? '単語を探し中…コードに寄せてかざしてな' : 'マスタに載っている単語は見つからんかった。もう少し寄って、明るいところで撮ってみてな');
     }else{
-      setStatus(found.length + '個の用語が見つかった。下線をタップで解説が出るで');
+      setStatus(found.length + '個の用語を検出' + (live ? '中(リアルタイム)' : '') + '。下線をタップで解説が出るで');
     }
   }
 
-  /* bboxはcanvasのピクセル座標。object-fit:contain(全体表示)のスケールに合わせて重ねる */
+  /* bboxはOCR画像(refW/refH)のピクセル座標。表示に合わせて重ねる:
+     ライブ映像=object-fit:cover(Math.max)、撮影結果=contain(Math.min) */
   function positionAnno(){
     anno.innerHTML = '';
-    if(!found.length || !canvas.width) return;
+    if(!found.length || !refW) return;
     const dispW = wrap.clientWidth, dispH = wrap.clientHeight;
-    const s = Math.min(dispW / canvas.width, dispH / canvas.height);
-    const offX = (dispW - canvas.width * s) / 2;
-    const offY = (dispH - canvas.height * s) / 2;
+    const s = wrap.classList.contains('live')
+      ? Math.max(dispW / refW, dispH / refH)
+      : Math.min(dispW / refW, dispH / refH);
+    const offX = (dispW - refW * s) / 2;
+    const offY = (dispH - refH * s) / 2;
     found.forEach((f, i)=>{
       const b = f.bbox;
       const u = document.createElement('div');
@@ -1297,7 +1349,11 @@ loadDone();
     anno.appendChild(box);
   }
 
-  function toggle(i){ activeIdx = (activeIdx === i) ? -1 : i; positionAnno(); }
+  function toggle(i){
+    activeIdx = (activeIdx === i) ? -1 : i;
+    activeTerm = (activeIdx >= 0) ? found[activeIdx].term : null;
+    positionAnno();
+  }
 
   function renderTerms(terms){
     if(!terms.length){ termsEl.innerHTML = ''; return; }
@@ -1311,7 +1367,7 @@ loadDone();
     });
   }
 
-  function clearAnno(){ anno.innerHTML = ''; found = []; activeIdx = -1; termsEl.innerHTML = ''; }
+  function clearAnno(){ anno.innerHTML = ''; found = []; activeIdx = -1; activeTerm = null; termsEl.innerHTML = ''; }
 
   startBtn.addEventListener('click', startCamera);
   shotBtn.addEventListener('click', capture);

@@ -27,9 +27,11 @@ yomitoki-code/
 
 ## 読むタブ（カメラOCR）の要点
 
-- 2026-07-15にClaude依存を廃止し、カメラ+OCR方式に変更（出先でサブスク認証なしで使うため）
-- 流れ: `getUserMedia`でカメラ起動 → canvasに静止画キャプチャ → **Tesseract.js**（CDNから初回のみ遅延読み込み、認識は端末内）でOCR → 単語のbboxを取得 → `glossary.js`と照合 → 該当語に下線オーバーレイ → タップで下線から棒(stick)を伸ばして吹き出し(callout)表示
-- 撮影結果の表示は `object-fit:contain`。下線の座標計算も同じcontainの式（`Math.min`スケール）で合わせている。**coverに変えると座標がズレる**ので注意
+- 2026-07-15にClaude依存を廃止し、カメラ+OCR方式に変更（出先でサブスク認証なしで使うため）。同日リアルタイム化
+- 流れ: `getUserMedia`でカメラ起動 → **リアルタイムループ**（`scanLoop`: ライブ映像のフレームをオフスクリーンcanvasに取り→OCR→下線更新、前の認識完了を待って次を回す）→ 単語のbboxを`glossary.js`と照合 → 該当語に下線オーバーレイ → タップで下線から棒(stick)を伸ばして吹き出し(callout)表示。「撮ってよみとく」でループを止めて画面固定
+- OCRは**Tesseract.js**（CDNから初回のみ遅延読み込み、認識は端末内）。ワーカーは`getWorker()`で1度だけ作って使い回す（毎回`Tesseract.recognize`すると初期化で数秒かかるため）
+- 座標系: ライブ映像は`object-fit:cover`（`Math.max`スケール）、撮影結果は`contain`（`Math.min`）。`positionAnno`が`wrap.classList.contains('live')`で式を切り替える。**CSSと式のペアを崩すと座標がズレる**
+- 開いている吹き出しは`activeTerm`（用語名）で追跡し、リアルタイム更新をまたいで維持される
 - OCRは `fetch(url);` のように記号込みで単語を返すため、照合は「複合キー→ドット隣接ペア→内部の識別子」の順で緩く探す（`lookup`関数）
 - カメラはHTTPS必須（localhost除く）。タブ切替時にストリームを停止する処理あり
 
